@@ -1,0 +1,210 @@
+
+
+
+
+
+
+
+
+
+
+
+<table border>
+  <tr>
+    <th>Fichier</th>
+    <th>Classe(s) d&eacute;finie(s)</th>
+    <th>Description</th>
+  </tr>
+
+
+
+  <tr>
+    <td><a href="Point2D.java">Point2D.java</a></td>
+    <td>Point2D</td>
+    <td rowspan=3>Des classes de nature math&eacute;matique / g&eacute;om&eacute;trique</td>
+  </tr>
+  <tr>
+    <td><a href="Vector2D.java">Vector2D.java</a></td>
+    <td>Vector2D</td>
+  </tr>
+  <tr>
+    <td><a href="AlignedRectangle2D.java">AlignedRectangle2D.java</a></td>
+    <td>AlignedRectangle2D</td>
+  </tr>
+
+
+
+  <tr>
+    <td><a href="Point2DUtil.java">Point2DUtil.java</a></td>
+    <td>Point2DUtil</td>
+    <td>Une classe contenant des m&eacute;thodes
+       pour tester si un point est &agrave; l'int&eacute;rieur
+       d'un polygone (utile pour r&eacute;aliser des effets de surbrilliance,
+       et pour r&eacute;aliser la s&eacute;lection en lasso),
+       pour calculer l'enveloppe convexe d'un ensemble de points
+       (utile pour dessiner des "bulles" autour d'un ou plusieurs objets).
+    </td>
+  </tr>
+
+
+
+  <tr>
+    <td><a href="GraphicsWrapper.java">GraphicsWrapper.java</a></td>
+    <td>GraphicsWrapper</td>
+    <td rowspan=2>
+       Ces deux classes permettent de compiler soit
+       (1) une <em>application</em> qui utilise <em>OpenGL</em> pour dessiner,
+       ou bien (2) un <em>applet</em> qui utilise <em>Java2D/Graphics2D</em> pour dessiner.
+       GraphicsFramework est un cadriciel qui re&ccedil;oit les &eacute;v&eacute;nements
+       de souris et de clavier,
+       et ensuite appelle des m&eacute;thodes dans le code client.
+       GraphicsFramework contient aussi le point d'entr&eacute;e main().
+       GraphicsWrapper est une abstraction des routines de dessin,
+       qui facilite aussi la gestion de zoom et pan dans une vue 2D
+        (transformation entre les syst&egrave;mes de coordonn&eacute;es "pixels" et "espace monde"
+        au moment du dessin et au moment de la r&eacute;ception d'&eacute;v&eacute;nements
+        de souris).
+       Le code client est suppos&eacute; utiliser GraphicsWrapper
+       pour dessiner, au lieu d'appeler directement des routines
+       de Java2D/Graphics2D ou bien des routines de OpenGL.
+       <br/>
+       <br/>
+       En r&eacute;sum&eacute;, GraphicsFramework appelle le code client,
+       qui appelle ensuite GraphicsWrapper pour dessiner:
+       <pre>
+         GraphicsFramework
+                 |
+                 v
+           (code client)
+                 |
+                 v
+          GraphicsWrapper
+       </pre>
+       Pour compiler la version application du code,
+       copiez doNotCompile/GraphicsFramework-APPLICATION-JOGL-OPENGL.java
+       et doNotCompile/GraphicsWrapper-JOGL-OPENGL.java
+       par dessus src/GraphicsFramework.java
+       et src/GraphicsWrapper.java,
+       et recompilez.
+       <br/><br/>
+       Pour compiler la version applet du code,
+       copiez doNotCompile/GraphicsFramework-APPLET-JAVA2D.java
+       et doNotCompile/GraphicsWrapper-JAVA2D.java
+       par dessus src/GraphicsFramework.java
+       et src/GraphicsWrapper.java,
+       et recompilez.
+       Ensuite, ouvrez le fichier index_test.html
+       qui contient une balise applet.
+        <br/>
+        <br/>
+        <b>Ne modifiez pas les fichiers GraphicsFramework*java ou GraphicsWrapper*java,
+        car ces modifications pourront
+        &ecirc;tre perdues, brisant votre code,
+        lorsque vous copiez une autre version par dessus.</b>
+        <br/>
+        <br/>
+        Pour compiler et ex&eacute;cuter
+        la version application du code, vous avez besoin de la librarie JOGL.
+        Une copie se trouve au
+        <a href="http://profs.etsmtl.ca/mmcguffin/code/java/lib/JOGL/">http://profs.etsmtl.ca/mmcguffin/code/java/lib/JOGL/</a>
+
+        </td>
+  </tr>
+  <tr>
+     <td><a href="GraphicsFramework.java">GraphicsFramework.java</a></td>
+     <td>GraphicsFramework</td>
+  </tr>
+
+
+  <tr>
+    <td><a href="Constant.java">Constant.java</a></td>
+    <td>Constant</td>
+    <td>Quelques constantes.
+        </td>
+  </tr>
+
+
+  <tr>
+    <td><a href="PopupWidget.java">PopupWidget.java</a></td>
+    <td>PopupWidget</td>
+    <td rowspan=3>Des classes servant &agrave; d&eacute;finir des widgets contextuels</td>
+  </tr>
+  <tr>
+    <td><a href="RadialMenuWidget.java">RadialMenuWidget.java</a></td>
+    <td>RadialMenuWidget</td>
+  </tr>
+  <tr>
+    <td><a href="LassoRectNodeSelectorWidget.java">LassoRectNodeSelectorWidget.java</a></td>
+    <td>LassoRectNodeSelectorWidget</td>
+  </tr>
+
+
+
+  <tr>
+    <td><a href="Node.java">Node.java</a></td>
+    <td>Node</td>
+    <td rowspan=2>Stockent le r&eacute;seau (graphe).
+       Network.selectedNodes stocke aussi le sous-ensemble de noeuds s&eacute;lectionn&eacute;s.
+       <br/>
+       <br/>
+       Dans la classe Network,
+       il y a une m&eacute;thode breadthFirstTraversal()
+       qui effectue un parcours en largeur,
+       et qui utilise le patron "visiteur".
+       Le parcours en largeur est utilis&eacute;
+       ensuite par les m&eacute;thodes
+       findNeighbourhoodOfNode*(),
+       qui retrouvent le voisinage d'un noeud ou d'un groupe de noeuds.
+       Une des m&eacute;thodes findNeighbourhoodOfNode*()
+       est ensuite utilis&eacute;e par la m&eacute;thode
+       performConcentricCircleLayout(),
+       qui calcule une disposition en cercles concentriques.
+       </td>
+  </tr>
+  <tr>
+    <td><a href="Network.java">Network.java</a></td>
+    <td>Network</td>
+  </tr>
+
+
+
+  <tr>
+    <td><a href="SimpleNetworkVisualizer.java">SimpleNetworkVisualizer.java</a></td>
+    <td>SimpleNetworkVisualizer</td>
+    <td>La classe principale.
+        SimpleNetworkVisualizer est le client de GraphicsFramework.
+        <br/>
+        <br/>
+        Interface utilisateur:
+        <ul>
+          <li>Bouton gauche de souris: d&eacute;placer un noeud individuel, ou la s&eacute;lection, ou le r&eacute;seau au complet</li>
+          <li>Shift+Bouton gauche de souris: s&eacute;lection en rectangle/lasso</li>
+          <li>Bouton droit de souris: zoom</li>
+          <li>Shift+Bouton droit de souris: menu radial menu. Activer ce menu par dessus un noeud individuel pour voir plus d'options.</li>
+          <li>Appuyer la touche "s": pour imprimer des informations suppl&eacute;mentaires au stdout.</li>
+        </ul>
+        Dans le code, cherchez la cha&icirc;ne "sleep" pour retrouver
+        le thread qui appelle simulateOneStepOfForceDirectedLayout()
+        pour mettre &agrave; jour la disposition dirig&eacute;e par forces ("force-directed layout").
+        <br/>
+        <br/>
+        Le r&eacute;seau est cr&eacute;e dans le constructeur de SimpleNetworkVisualizer.
+        <br/>
+        <br/>
+
+
+
+        <br/>
+        </td>
+  </tr>
+
+</table>
+
+&nbsp;<br/>
+&nbsp;<br/>
+&nbsp;<br/>
+&nbsp;<br/>
+&nbsp;<br/>
+
+
+
