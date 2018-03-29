@@ -64,6 +64,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 		graphicsFramework.setProgramName("SimpleNetworkVisualizer");
 		graphicsFramework.setAuthorInfo("Michael J. McGuffin, 2009-2011");
 		graphicsFramework.setPreferredWindowSize(Constant.INITIAL_WINDOW_WIDTH,Constant.INITIAL_WINDOW_HEIGHT);
+		graphicsFramework.setSize(Constant.INITIAL_WINDOW_WIDTH, Constant.INITIAL_WINDOW_HEIGHT);
 		gw.setFontHeight( Constant.TEXT_HEIGHT );
 
 
