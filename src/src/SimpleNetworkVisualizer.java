@@ -1,4 +1,4 @@
-package src;
+
 import java.awt.Color;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.io.InputStream;
 import java.io.StreamTokenizer;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
@@ -76,17 +78,12 @@ public class SimpleNetworkVisualizer implements Runnable {
 		//network.assignRandomLabelsToAllNodes( random );
 		//network.assignRandomColorsToAllNodes( random );
 		// SECOND WAY TO GET A NETWORK: create it with hardcoded nodes and edges.
-		generateNetwork( 5 );
-		network.assignRandomLabelsToAllNodes( random );
-		network.assignRandomColorsToAllNodes( random );
+		//generateNetwork( 5 );
+		//network.assignRandomLabelsToAllNodes( random );
+		//network.assignRandomColorsToAllNodes( random );
 		// THIRD WAY TO GET A NETWORK: read it in from a file
-		//readInTabDelimitedFileAsNetwork("file:///home/mjm/S/www/code/java/SimpleNetworkVisualizer-2D_JavaApplicationAndApplet/src/data/test.txt",0,0,1);
-
-
-
-
-
-
+		
+		readArtistsAsNetwork("data/Artist_influenced_by.txt","data/Artist.txt",1,0,2);
 
 
 		int w = Constant.INITIAL_WINDOW_WIDTH;
@@ -109,120 +106,9 @@ public class SimpleNetworkVisualizer implements Runnable {
 		radialMenu.setItemLabelAndID( 5, "Toggle Force Simulation", C_TOGGLE_FORCE_SIMULATION );
 		radialMenu.setItemLabelAndID( 6, "Frame Selected Nodes", C_FRAME_SELECTED_NODES );
 		radialMenu.setItemLabelAndID( 7, "Frame Network", C_FRAME_NETWORK );
-		
-		layoutCirculaire();
 
 	}
-	
-	// debut de la modification 
-	
-	public void layoutCirculaire(){
-		int x, y, w, h;
-	    int numNodes = network.getNumNodes();;
-	    //double parentWidth = parent.getSize().width;
-	    //double parentHeight = parent.getSize().height;
-	    //Insets insets = parent.getInsets();
-	    float centerX = Constant.INITIAL_WINDOW_WIDTH  / 2;
-	    float centerY = Constant.INITIAL_WINDOW_HEIGHT / 2;
-	    //gw.drawCircle(centerX, centerY, 50);
-	    gw.drawCircle(10, 10, 5,false);
-	    /*
-	    if (n == 1) {
-	      comp = parent.getComponent(0);
-	      x = centerX;
-	      y = centerY;
-	      compPS = comp.getPreferredSize();
-	      w = compPS.width;
-	      h = compPS.height;
-	      comp.setBounds(x, y, w, h);
-	    } else {
-	      double r = (Math.min(parentWidth - (insets.left + insets.right), parentHeight
-	          - (insets.top + insets.bottom))) / 2;
-	      r *= 0.75; // Multiply by .75 to account for extreme right and bottom
-	                  // Components
-	      for (int i = 0; i < n; i++) {
-	        comp = parent.getComponent(i);
-	        compPS = comp.getPreferredSize();
-	        if (isCircle) {
-	          c = (int) (r * Math.cos(2 * i * Math.PI / n));
-	          s = (int) (r * Math.sin(2 * i * Math.PI / n));
-	        }
-	        x = c + centerX;
-	        y = s + centerY;
 
-	        w = compPS.width;
-	        h = compPS.height;
-
-	        comp.setBounds(x, y, w, h);
-	      }
-	    }*/
-	}
-	
-	public ArrayList<Integer> heuristique(){
-		if (network == null) return null;
-		int i,j,numNode,pos,indexNeighbour,iteration=0;
-		double poids;
-		int nbNode=network.getNumNodes();
-		boolean stop=false;
-		ArrayList< Node> neighbours;
-		ArrayList< Integer > arcDispositionTri;
-		ArrayList< Integer > arcDisposition= new ArrayList< Integer >();
-		ArrayList< Double > arcPoids= new ArrayList< Double >();
-		
-		for(i=0;i<nbNode;i++){  
-			arcDisposition.add(new Integer(i));  // arcDisposition(i)=j --> noeud d'index i est en position j
-		}
-		Collections.shuffle(arcDisposition);  //tableau d'entiers differents repartis aleatoirement
-		
-		while(!stop && iteration<nbNode){
-			
-			for(i=0;i<nbNode;i++){  
-				arcPoids.add(0.0);
-			}
-			
-			for(i=0;i<nbNode;i++){   //calcul des poids de chacun des noeuds dans la disposition actuelle
-				poids=1.1*arcDisposition.get(i);
-				numNode=i;
-				neighbours=network.getNode(numNode).neighbours;
-				for (j=0;j<neighbours.size();j++){  //recherche de la position des differents voisins 
-					indexNeighbour=neighbours.get(j).getIndex();
-					pos=arcDisposition.get(indexNeighbour);
-					poids+=pos;
-				}
-				arcPoids.set(i,poids/(1.1+neighbours.size()));
-			}
-			
-			arcDispositionTri=Trier(arcPoids,arcDisposition); // On determine la nouvelle configuration
-			
-			if (arcDispositionTri.equals(arcDisposition)) stop=true;
-			iteration++;
-		}
-		
-		
-		return arcDisposition;
-	}
-	
-	
-	public ArrayList<Integer> Trier( ArrayList< Double> n,ArrayList<Integer> m){
-		int taille=n.size(),i,j,tempm;
-		double tempn;
-		for (i=0;i<taille-1;i++){
-			for(j=0;j<taille-i-1;j++){
-				if (n.get(j)>n.get(j+1)){
-					tempm=m.get(i);
-					tempn=n.get(i);
-					m.set(i, m.get(i+1));
-					n.set(i, n.get(i+1));
-					m.set(i+1,tempm);
-					n.set(i+1,tempn);
-				}
-			}
-		}
-		return m;
-	}
-	
-	//fin de la modification
-	
 	private void generateNetwork( int networkID ) {
 		int i;
 		switch ( networkID ) {
@@ -504,10 +390,8 @@ public class SimpleNetworkVisualizer implements Runnable {
 		}
 	}
 
-
-
 	private void readInTabDelimitedFileAsNetwork(
-		String URLOfFile, // Example: "file:///home/..."
+		String relPath, // Example: "file:///home/..."
 
 		// useful for skipping over a header in the file
 		int numLinesToSkip,
@@ -522,11 +406,11 @@ public class SimpleNetworkVisualizer implements Runnable {
 		ArrayList<String> arrayListOfFirstNodes = new ArrayList<String>();
 		ArrayList<String> arrayListOfSecondNodes = new ArrayList<String>();
 		try {
-			//FileInputStream fstream = new FileInputStream("data/small_network_for_mike.txt");
-			//DataInputStream in = new DataInputStream(fstream);
-			//BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			is = new URL( URLOfFile ).openStream();
-			BufferedReader br = new BufferedReader( new InputStreamReader(is) );
+			FileInputStream fstream = new FileInputStream(relPath);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			//is = new URL( URLOfFile ).openStream();
+			//BufferedReader br = new BufferedReader( new InputStreamReader(is) );
 
 			String s;
 			while ((s = br.readLine()) != null) {
@@ -564,6 +448,116 @@ public class SimpleNetworkVisualizer implements Runnable {
 			String nodeLabel = arrayListOfAllNodes.get(i);
 			network.addNode( new Node( nodeLabel ) );
 		}
+
+		String [] arrayOfNodes = arrayListOfAllNodes.toArray( new String[ arrayListOfAllNodes.size() ] );
+
+		// add edges to network
+		//System.out.println("size of other array lists (should both be number of edges): "+arrayListOfFirstNodes.size()+","+arrayListOfSecondNodes.size());
+		assert arrayListOfFirstNodes.size() == arrayListOfSecondNodes.size();
+		for ( i = 0; i < arrayListOfFirstNodes.size(); ++i ) {
+			int nodeIndex1 = Arrays.binarySearch( arrayOfNodes, arrayListOfFirstNodes.get(i) );
+			int nodeIndex2 = Arrays.binarySearch( arrayOfNodes, arrayListOfSecondNodes.get(i) );
+			assert 0 <= nodeIndex1 && nodeIndex1 < network.getNumNodes();
+			assert 0 <= nodeIndex2 && nodeIndex2 < network.getNumNodes();
+			network.addEdge( nodeIndex1, nodeIndex2 );
+		}
+
+	}
+
+	private void readArtistsAsNetwork(
+		String linkPath, // Path to the CSV file containing the links between artists
+		String artistsPath, // Path to the CSV file containing the Artist informations
+
+		// useful for skipping over a header in the file
+		int numLinesToSkip,
+
+		// These should be 0 for first column (i.e. before any tabs), 1 for 2nd (after 1st tab), etc.
+		int indexOfColumn1,
+		int indexOfColumn2
+	) {
+		InputStream is = null;
+		int lineIndex = -1;
+		ArrayList<String> arrayListOfAllNodes = new ArrayList<String>();
+		ArrayList<String> arrayListOfFirstNodes = new ArrayList<String>();
+		ArrayList<String> arrayListOfSecondNodes = new ArrayList<String>();
+		ArrayList<ArrayList<String>> artists = new ArrayList<ArrayList<String>>();
+		// Reading link file and adding to arrays
+		try {
+			FileInputStream fstream = new FileInputStream(linkPath);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			//is = new URL( URLOfFile ).openStream();
+			//BufferedReader br = new BufferedReader( new InputStreamReader(is) );
+
+			String s;
+			while ((s = br.readLine()) != null) {
+				++ lineIndex;
+				if ( lineIndex < numLinesToSkip ) continue;
+				String fields[] = s.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+				
+				for(int i = 0; i < fields.length; i++) {
+					fields[i] = fields[i].replace("\"", "");
+				}
+
+				if ( fields.length > Math.max(indexOfColumn1,indexOfColumn2)  && !fields[indexOfColumn1].isEmpty() && !fields[indexOfColumn2].isEmpty() ) {
+					arrayListOfAllNodes.add(fields[indexOfColumn1]);
+					arrayListOfAllNodes.add(fields[indexOfColumn2]);
+					arrayListOfFirstNodes.add(fields[indexOfColumn1]);
+					arrayListOfSecondNodes.add(fields[indexOfColumn2]);
+				}
+			}
+			is.close();
+		} catch (Exception e) {
+			System.err.println("Error: " + e.getMessage());
+		}
+		
+		// Reading Artists information and adding to array
+		try {
+			FileInputStream fstream = new FileInputStream(artistsPath);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			//is = new URL( URLOfFile ).openStream();
+			//BufferedReader br = new BufferedReader( new InputStreamReader(is) );
+
+			String s;
+			while ((s = br.readLine()) != null) {
+				++ lineIndex;
+				ArrayList<String> artist = new ArrayList<String>();
+				if ( lineIndex < numLinesToSkip ) continue;
+				String fields[] = s.split(",");
+				
+				for(int i = 0; i < fields.length; i++) {
+					fields[i] = fields[i].replace("\"", "");
+					artist.add(fields[i]);
+				}
+				artists.add(artist);
+			}
+			is.close();
+		} catch (Exception e) {
+			System.err.println("Error: " + e.getMessage());
+		}
+
+		//System.out.println("initial size (should be twice number of edges): "+arrayListOfAllNodes.size());
+		// Eliminate duplicate strings
+		HashSet<String> hashSet = new HashSet(arrayListOfAllNodes);
+		arrayListOfAllNodes.clear();
+		arrayListOfAllNodes.addAll( hashSet );
+		//System.out.println("number of nodes (after eliminating duplicates): "+arrayListOfAllNodes.size());
+
+		// Sort in alphabetical order
+		Collections.sort(arrayListOfAllNodes);
+
+		// add nodes to network
+		assert network == null;
+		network = new Network();
+		int i;
+		for ( i = 0; i < arrayListOfAllNodes.size(); ++i ) {
+			String nodeLabel = arrayListOfAllNodes.get(i);
+			network.addNode( new Node( nodeLabel ) );
+		}
+		
+		// populate nodes with artist information
+		network.populateNodes(artists);
 
 		String [] arrayOfNodes = arrayListOfAllNodes.toArray( new String[ arrayListOfAllNodes.size() ] );
 

@@ -1,4 +1,4 @@
-package src;
+
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -127,8 +127,7 @@ public class Network {
 
 	public Network() {
 	}
-	
-	
+
 	public boolean isForceDirectedLayoutActive() {
 		return this.isForceDirectedLayoutActive;
 	}
@@ -362,16 +361,68 @@ public class Network {
 		return null;
 	}
 
-
-
-
-
-
-
-
-
-
-
+	// Fills all nodes with the information about the related artist
+	public void populateNodes(ArrayList<ArrayList<String>> artists) {
+		ArrayList<Node> toDelete = new ArrayList<Node>();
+		for(int i = 0 ; i < nodeArray.size(); i++) {
+			Node n = nodeArray.get(i);
+			boolean found = false;
+			int j = 0;
+			
+			if(n.label.equals("aifoxqe5ldde")) {
+				n.color_g = 0.9f;
+			}
+			if(n.label.equals("0iftxql5ldae")) {
+				n.color_r = 0.9f;
+			}
+			
+			while(!found && j<artists.size()) {
+				
+				if(n.label.equals(artists.get(j).get(0))) {
+					
+					/*if(artists.get(j).get(0).equals("3iftxqw5ldse")) {
+						System.out.println("\n\nComparison " + i + " : \n");
+						System.out.println("    ID-A : " + artists.get(j).get(0) + "\n");
+						System.out.println("    ID-N : " + n.label + "\n");
+						n.color_r = 0.9f;
+					}*/
+					
+					n.pgid = n.label;
+					n.setArtistInfos(artists.get(j).get(1),
+							artists.get(j).get(2),
+							artists.get(j).get(3),
+							artists.get(j).get(4),
+							artists.get(j).get(5),
+							artists.get(j).get(6),
+							artists.get(j).get(7),
+							artists.get(j).get(8),
+							artists.get(j).get(9),
+							artists.get(j).get(10)
+							);
+					n.label = n.artist;
+					found = true;
+				}
+				j ++;
+			}
+			
+			if(!found) {
+				System.out.println("Not found : " + n.label + "\n");
+				toDelete.add(n);
+			}
+			
+		}
+		
+		/*for(int i = 0 ; i < nodeArray.size(); i++) {
+			Node n = nodeArray.get(i);
+			if(n.label.equals("0iftxql5ldae")) {
+				deleteNode(n);
+			}
+		}*/
+		
+		/*for(int i = 0; i < toDelete.size(); i++) {
+			deleteNode(toDelete.get(i));
+		}*/
+	}
 
 	// In the next few methods, if ``nodes'' is null,
 	// the operation is performed on all nodes in the network,
