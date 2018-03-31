@@ -76,7 +76,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 		//network.assignRandomLabelsToAllNodes( random );
 		//network.assignRandomColorsToAllNodes( random );
 		// SECOND WAY TO GET A NETWORK: create it with hardcoded nodes and edges.
-		generateNetwork( 5 );
+		generateNetwork( 6 );
 		network.assignRandomLabelsToAllNodes( random );
 		network.assignRandomColorsToAllNodes( random );
 		// THIRD WAY TO GET A NETWORK: read it in from a file
@@ -98,8 +98,16 @@ public class SimpleNetworkVisualizer implements Runnable {
 				new Point2D(w/2+radius,h/2+radius)
 			)
 		);
-
-		network.computeDerivedData();
+		
+		// mettre à jour les index
+		ArrayList<Node> nodeArray=network.getNodes();
+		for(int i=0;i<network.getNumNodes();i++){  
+			nodeArray.get(i).setIndex(i);
+		}
+		
+		heuristique();
+		layoutCirculaire();
+		//network.computeDerivedData();
 
 		radialMenu.setItemLabelAndID( RadialMenuWidget.CENTRAL_ITEM, "", C_TOGGLE_NODE_SELECTION );
 		radialMenu.setItemLabelAndID( /* 1 for north */ 1, "Toggle Node Selection", C_TOGGLE_NODE_SELECTION );
@@ -110,74 +118,63 @@ public class SimpleNetworkVisualizer implements Runnable {
 		radialMenu.setItemLabelAndID( 6, "Frame Selected Nodes", C_FRAME_SELECTED_NODES );
 		radialMenu.setItemLabelAndID( 7, "Frame Network", C_FRAME_NETWORK );
 		
-		layoutCirculaire();
 
 	}
 	
 	// debut de la modification 
 	
 	public void layoutCirculaire(){
-		int x, y, w, h;
-	    int numNodes = network.getNumNodes();;
-	    //double parentWidth = parent.getSize().width;
-	    //double parentHeight = parent.getSize().height;
-	    //Insets insets = parent.getInsets();
+		int i;
+	    int numNodes = network.getNumNodes();
+	    ArrayList< Node> nodes =network.getNodes();
+	    Node n;
+	    
 	    float centerX = Constant.INITIAL_WINDOW_WIDTH  / 2;
 	    float centerY = Constant.INITIAL_WINDOW_HEIGHT / 2;
-	    //gw.drawCircle(centerX, centerY, 50);
-	    gw.drawCircle(10, 10, 5,false);
-	    /*
-	    if (n == 1) {
-	      comp = parent.getComponent(0);
-	      x = centerX;
-	      y = centerY;
-	      compPS = comp.getPreferredSize();
-	      w = compPS.width;
-	      h = compPS.height;
-	      comp.setBounds(x, y, w, h);
+	    double r=20*numNodes/Math.PI;
+	    
+	    if (numNodes == 1) {
+	      n=nodes.get(0);
+	      n.x=centerX;
+	      n.y=centerY;
+	      
 	    } else {
-	      double r = (Math.min(parentWidth - (insets.left + insets.right), parentHeight
-	          - (insets.top + insets.bottom))) / 2;
-	      r *= 0.75; // Multiply by .75 to account for extreme right and bottom
-	                  // Components
-	      for (int i = 0; i < n; i++) {
-	        comp = parent.getComponent(i);
-	        compPS = comp.getPreferredSize();
-	        if (isCircle) {
-	          c = (int) (r * Math.cos(2 * i * Math.PI / n));
-	          s = (int) (r * Math.sin(2 * i * Math.PI / n));
-	        }
-	        x = c + centerX;
-	        y = s + centerY;
-
-	        w = compPS.width;
-	        h = compPS.height;
-
-	        comp.setBounds(x, y, w, h);
+	      
+	      for (i = 0; i < numNodes; i++) {
+	    	n=nodes.get(i);
+	        n.x = (float) (centerX + r * Math.cos(2*Math.PI*i / numNodes));
+	        n.y = (float) (centerY + r * Math.sin(2*Math.PI*i / numNodes));
+	        
 	      }
-	    }*/
+	    }
 	}
 	
-	public ArrayList<Integer> heuristique(){
-		if (network == null) return null;
+	public void heuristique(){
+		if (network == null) return ;
 		int i,j,numNode,pos,indexNeighbour,iteration=0;
 		double poids;
 		int nbNode=network.getNumNodes();
 		boolean stop=false;
 		ArrayList< Node> neighbours;
-		ArrayList< Integer > arcDispositionTri;
+		ArrayList< Node > nodeArray =network.getNodes();
+		ArrayList< Node > nodeArrayHeuristique =new ArrayList<Node>();
+		ArrayList< Integer > arcDispositionTemp=new ArrayList<Integer>();
 		ArrayList< Integer > arcDisposition= new ArrayList< Integer >();
 		ArrayList< Double > arcPoids= new ArrayList< Double >();
 		
 		for(i=0;i<nbNode;i++){  
-			arcDisposition.add(new Integer(i));  // arcDisposition(i)=j --> noeud d'index i est en position j
+			arcDisposition.add(new Integer(i));  // arcDisposition(i)=j --> noeud d'index i est en position j 
+			arcPoids.add(0.0);
+			arcDispositionTemp.add(0);
 		}
-		Collections.shuffle(arcDisposition);  //tableau d'entiers differents repartis aleatoirement
 		
-		while(!stop && iteration<nbNode){
+		Collections.shuffle(arcDisposition);  //tableau d'entiers differents repartis aleatoirement
+
+		
+		while(!stop && iteration<(int)Math.sqrt(nbNode)){
 			
 			for(i=0;i<nbNode;i++){  
-				arcPoids.add(0.0);
+				arcPoids.set(i,0.0);
 			}
 			
 			for(i=0;i<nbNode;i++){   //calcul des poids de chacun des noeuds dans la disposition actuelle
@@ -192,33 +189,60 @@ public class SimpleNetworkVisualizer implements Runnable {
 				arcPoids.set(i,poids/(1.1+neighbours.size()));
 			}
 			
-			arcDispositionTri=Trier(arcPoids,arcDisposition); // On determine la nouvelle configuration
+			for(i=0;i<nbNode;i++){   // sauvegarder la disposition actuelle
+				arcDispositionTemp.set(i,arcDisposition.get(i));  
+			}
 			
-			if (arcDispositionTri.equals(arcDisposition)) stop=true;
+			Trier(arcPoids,arcDisposition);		// On determine la nouvelle configuration
+			
+			if (arcDispositionTemp.equals(arcDisposition)) stop=true;  // on regarde si la configuration a changee
+			
+			
 			iteration++;
 		}
 		
+		for(i=0;i<nbNode;i++){  // Positionner les noeud suivant la disposition determinee
+			j=0;
+			while(j<nbNode && arcDisposition.get(j)!=i) j++;
+			nodeArrayHeuristique.add(network.getNode(j));  
+		}
 		
-		return arcDisposition;
+		for(i=0;i<nbNode;i++){  // Mis a jour du network
+			nodeArray.set(i,nodeArrayHeuristique.get(i));
+		}
+		
+		//return arcDispositionTri;
 	}
 	
 	
-	public ArrayList<Integer> Trier( ArrayList< Double> n,ArrayList<Integer> m){
-		int taille=n.size(),i,j,tempm;
-		double tempn;
-		for (i=0;i<taille-1;i++){
-			for(j=0;j<taille-i-1;j++){
-				if (n.get(j)>n.get(j+1)){
-					tempm=m.get(i);
-					tempn=n.get(i);
-					m.set(i, m.get(i+1));
-					n.set(i, n.get(i+1));
-					m.set(i+1,tempm);
-					n.set(i+1,tempn);
+	public void Trier( ArrayList< Double> n,ArrayList<Integer> m){
+		int pos;
+		int taille=n.size(),i,j;
+		ArrayList< Integer > posIndex=new ArrayList<Integer>();  //posIndex(i)=j --> noeud j en position i
+		for (i=0;i<taille;i++){
+			posIndex.add(-1);
+		}
+		for (i=0;i<taille;i++){
+			pos=0;
+			for(j=0;j<taille && j!=i;j++){
+				if (n.get(i)>n.get(j)){
+					pos+=1;
 				}
 			}
+			while (pos<taille &&  posIndex.get(pos)!=-1){  // gerer les conflits en cas d'egalite de poids
+				pos++;
+			}
+			posIndex.set(pos,i);
 		}
-		return m;
+		
+		for(i=0;i<taille;i++){ //mettre a jour les index
+			j=0;
+			while(j<taille && posIndex.get(j)!=i){
+				j++;
+			}
+			m.set(i,j);
+		}
+		
 	}
 	
 	//fin de la modification
