@@ -99,14 +99,22 @@ public class SimpleNetworkVisualizer implements Runnable {
 			)
 		);
 		
-		// mettre à jour les index
-		ArrayList<Node> nodeArray=network.getNodes();
+		// mettre a jour les index
+		network.initIndex();
+		
+		/*System.out.println("avant");
 		for(int i=0;i<network.getNumNodes();i++){  
-			nodeArray.get(i).setIndex(i);
-		}
+			System.out.println(network.getNodes().get(i).getIndex());
+		}*/
 		
 		heuristique();
 		layoutCirculaire();
+		
+		/*System.out.println("apres");
+		for(int i=0;i<network.getNumNodes();i++){  
+			System.out.println(network.getNodes().get(i).getIndex());
+		}*/
+		
 		//network.computeDerivedData();
 
 		radialMenu.setItemLabelAndID( RadialMenuWidget.CENTRAL_ITEM, "", C_TOGGLE_NODE_SELECTION );
@@ -126,25 +134,16 @@ public class SimpleNetworkVisualizer implements Runnable {
 	public void layoutCirculaire(){
 		int i;
 	    int numNodes = network.getNumNodes();
-	    ArrayList< Node> nodes =network.getNodes();
-	    Node n;
 	    
 	    float centerX = Constant.INITIAL_WINDOW_WIDTH  / 2;
 	    float centerY = Constant.INITIAL_WINDOW_HEIGHT / 2;
 	    double r=20*numNodes/Math.PI;
 	    
 	    if (numNodes == 1) {
-	      n=nodes.get(0);
-	      n.x=centerX;
-	      n.y=centerY;
-	      
+	      network.UpdateNodePosition(centerX,centerY,0);
 	    } else {
-	      
 	      for (i = 0; i < numNodes; i++) {
-	    	n=nodes.get(i);
-	        n.x = (float) (centerX + r * Math.cos(2*Math.PI*i / numNodes));
-	        n.y = (float) (centerY + r * Math.sin(2*Math.PI*i / numNodes));
-	        
+	    	network.UpdateNodePosition((float) (centerX + r * Math.cos(2*Math.PI*i / numNodes)),(float) (centerY + r * Math.sin(2*Math.PI*i / numNodes)),i);
 	      }
 	    }
 	}
@@ -156,7 +155,6 @@ public class SimpleNetworkVisualizer implements Runnable {
 		int nbNode=network.getNumNodes();
 		boolean stop=false;
 		ArrayList< Node> neighbours;
-		ArrayList< Node > nodeArray =network.getNodes();
 		ArrayList< Node > nodeArrayHeuristique =new ArrayList<Node>();
 		ArrayList< Integer > arcDispositionTemp=new ArrayList<Integer>();
 		ArrayList< Integer > arcDisposition= new ArrayList< Integer >();
@@ -172,6 +170,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 
 		
 		while(!stop && iteration<(int)Math.sqrt(nbNode)){
+		//while(!stop && iteration<nbNode){
 			
 			for(i=0;i<nbNode;i++){  
 				arcPoids.set(i,0.0);
@@ -193,7 +192,17 @@ public class SimpleNetworkVisualizer implements Runnable {
 				arcDispositionTemp.set(i,arcDisposition.get(i));  
 			}
 			
+			/*System.out.println("avant");
+			for(i=0;i<network.getNumNodes();i++){  
+				System.out.println(arcDisposition.get(i));
+			}*/
+			
 			Trier(arcPoids,arcDisposition);		// On determine la nouvelle configuration
+			
+			/*System.out.println("apres");
+			for(i=0;i<network.getNumNodes();i++){  
+				System.out.println(arcDisposition.get(i));
+			}*/
 			
 			if (arcDispositionTemp.equals(arcDisposition)) stop=true;  // on regarde si la configuration a changee
 			
@@ -201,6 +210,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 			iteration++;
 		}
 		
+		System.out.println(iteration +"   "+(int)Math.sqrt(nbNode));
 		for(i=0;i<nbNode;i++){  // Positionner les noeud suivant la disposition determinee
 			j=0;
 			while(j<nbNode && arcDisposition.get(j)!=i) j++;
@@ -208,10 +218,9 @@ public class SimpleNetworkVisualizer implements Runnable {
 		}
 		
 		for(i=0;i<nbNode;i++){  // Mis a jour du network
-			nodeArray.set(i,nodeArrayHeuristique.get(i));
+			network.UpdateHeuristiqueNetwork(i,nodeArrayHeuristique.get(i));
 		}
 		
-		//return arcDispositionTri;
 	}
 	
 	
@@ -224,7 +233,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 		}
 		for (i=0;i<taille;i++){
 			pos=0;
-			for(j=0;j<taille && j!=i;j++){
+			for(j=0;j<taille;j++){
 				if (n.get(i)>n.get(j)){
 					pos+=1;
 				}

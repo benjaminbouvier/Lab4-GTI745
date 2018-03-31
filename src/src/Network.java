@@ -128,6 +128,25 @@ public class Network {
 	public Network() {
 	}
 	
+	//debut modification
+	public void initIndex(){
+		for(int i=0;i<getNumNodes();i++){  
+			nodeArray.get(i).setIndex(i);
+		}
+	}
+	
+	public void UpdateHeuristiqueNetwork(int i,Node n){
+		nodeArray.set(i, n);
+	}
+	
+	public void UpdateNodePosition(float x,float y,int index){
+		Node n=getNode(index);
+		n.x=x;
+		n.y=y;
+	}
+	//fin modification
+	
+	
 	
 	public boolean isForceDirectedLayoutActive() {
 		return this.isForceDirectedLayoutActive;
