@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public class Node {
 
 	public ArrayList<Node> neighbours = new ArrayList<Node>();
+	public ArrayList<String> genres = new ArrayList<String>();
 
 	public float clusteringCoefficient = 0;
 
@@ -23,6 +24,7 @@ public class Node {
 	public String amgid;
 	public String born_name;
 	public boolean is_solo;
+	public String primary_genre;
 	
 
 	public float x = 0, y = 0; // position in world space
@@ -102,6 +104,34 @@ public class Node {
 		}
 		else {
 			this.is_solo = false;
+		}
+		
+	}
+	
+	public void setPrimaryGenre() {
+		ArrayList<String> tempGenres = new ArrayList<String>();
+		ArrayList<Integer> tempCount = new ArrayList<Integer>();
+		int maxCount = 0;
+		
+		for(int i=0; i<this.genres.size(); i++) {
+			if(!tempGenres.contains(genres.get(i))) {
+				tempGenres.add(genres.get(i));
+				tempCount.add(1);
+			}
+			else {
+				for(int j=0; j<tempGenres.size(); j++) {
+					if(tempGenres.get(j).equals(this.genres.get(i))) {
+						tempCount.set(j, tempCount.get(j)+1);
+					}
+				}
+			}
+		}
+		
+		for(int i=0; i<tempGenres.size(); i++) {
+			if(tempCount.get(i)>maxCount) {
+				this.primary_genre = tempGenres.get(i);
+				maxCount = tempCount.get(i);
+			}
 		}
 		
 	}

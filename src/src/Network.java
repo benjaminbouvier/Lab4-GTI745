@@ -1,5 +1,6 @@
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -157,8 +158,22 @@ public class Network {
 			n2.neighbours.add( n1 );
 		}
 	}
+	public void addEdge( Node n1, Node n2 , String genre) {
+		if ( n1 == n2 || n1 == null || n2 == null ) return;
+		if ( ! n1.neighbours.contains(n2) ) {
+			n1.neighbours.add( n2 );
+			n1.genres.add(genre);
+		}
+		if ( ! n2.neighbours.contains(n1) ) {
+			n2.neighbours.add( n1 );
+			n2.genres.add(genre);
+		}
+	}
 	public void addEdge( int nodeIndex1, int nodeIndex2 ) {
-		addEdge( getNode(nodeIndex1), getNode(nodeIndex2) );
+		addEdge( getNode(nodeIndex1), getNode(nodeIndex2));
+	}
+	public void addEdge( int nodeIndex1, int nodeIndex2, String genre ) {
+		addEdge( getNode(nodeIndex1), getNode(nodeIndex2) , genre);
 	}
 
 	public boolean areNodesAdjacent( Node n1, Node n2 ) {
@@ -412,15 +427,42 @@ public class Network {
 		for(int i = 0; i < toDelete.size(); i++) {
 			deleteNode(toDelete.get(i));
 		}
+		
+		generateColors();
 	}
 	
 	// Verifies the amount of different genres available and attributes a color to each
 	public void generateColors() {
-		ArrayList<String> genres = new ArrayList<String>();
+		ArrayList<String> globalGenres = new ArrayList<String>();
 		for(int i = 0 ; i < nodeArray.size(); i++) {
 			Node n = nodeArray.get(i);
-			
+			n.setPrimaryGenre();
+			n.label = n.label + " - " + n.primary_genre;
+			for(int j=0; j<n.genres.size(); j++) {
+				if(!globalGenres.contains(n.genres.get(j))) {
+					globalGenres.add(n.genres.get(j));
+				}
+			}
 		}
+		
+		Collections.sort(globalGenres);
+		
+		int split = (int) Math.ceil(Math.cbrt(globalGenres.size()));
+		float part = 0.7f/split;
+		for(int i = 0 ; i < nodeArray.size(); i++) {
+			Node n = nodeArray.get(i);
+			for(int j = 0 ; j < globalGenres.size(); j++) {
+				if(n.primary_genre.equals(globalGenres.get(j))) {
+					int temp = j;
+					n.color_b = 0.15f + part * (float) Math.floor(temp/(split*split));
+					temp = temp - (int) Math.floor(temp/(split*split))*split*split;
+					n.color_g = 0.15f + part * (float) Math.floor(temp/split);
+					temp = temp - (int) Math.floor(temp/split)*split;
+					n.color_r = 0.15f + part * temp;
+				}
+			}
+		}
+		
 	}
 
 	// In the next few methods, if ``nodes'' is null,

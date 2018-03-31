@@ -576,7 +576,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 			int nodeIndex2 = Arrays.binarySearch( arrayOfNodes, arrayListOfSecondNodes.get(i) );
 			assert 0 <= nodeIndex1 && nodeIndex1 < network.getNumNodes();
 			assert 0 <= nodeIndex2 && nodeIndex2 < network.getNumNodes();
-			network.addEdge( nodeIndex1, nodeIndex2 );
+			network.addEdge( nodeIndex1, nodeIndex2 , arrayListOfGenres.get(i));
 		}
 
 		// populate nodes with artist information
