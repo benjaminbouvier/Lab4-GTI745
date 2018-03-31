@@ -362,31 +362,16 @@ public class Network {
 	}
 
 	// Fills all nodes with the information about the related artist
-	public void populateNodes(ArrayList<ArrayList<String>> artists) {
+	public void populateNodes(ArrayList<ArrayList<String>> artists, ArrayList<String> extraIds, ArrayList<String> extraNames) {
 		ArrayList<Node> toDelete = new ArrayList<Node>();
 		for(int i = 0 ; i < nodeArray.size(); i++) {
 			Node n = nodeArray.get(i);
 			boolean found = false;
 			int j = 0;
 			
-			if(n.label.equals("aifoxqe5ldde")) {
-				n.color_g = 0.9f;
-			}
-			if(n.label.equals("0iftxql5ldae")) {
-				n.color_r = 0.9f;
-			}
-			
 			while(!found && j<artists.size()) {
 				
-				if(n.label.equals(artists.get(j).get(0))) {
-					
-					/*if(artists.get(j).get(0).equals("3iftxqw5ldse")) {
-						System.out.println("\n\nComparison " + i + " : \n");
-						System.out.println("    ID-A : " + artists.get(j).get(0) + "\n");
-						System.out.println("    ID-N : " + n.label + "\n");
-						n.color_r = 0.9f;
-					}*/
-					
+				if(n.label.equals(artists.get(j).get(0))) {					
 					n.pgid = n.label;
 					n.setArtistInfos(artists.get(j).get(1),
 							artists.get(j).get(2),
@@ -405,15 +390,36 @@ public class Network {
 				j ++;
 			}
 			
+			j=0;
+			while(!found && j<extraIds.size()) {
+				if(n.label.equals(extraIds.get(j)) && !extraNames.get(j).isEmpty()) {
+					n.pgid = n.label;
+					n.artist = extraNames.get(j);
+					n.label = n.artist;
+					found = true;
+				}
+				j++;
+			}
+			
 			if(!found) {
-				System.out.println("Not found : " + n.label + "\n");
+				//System.out.println("Not found : " + n.label + "\n");
 				toDelete.add(n);
 			}
 			
 		}
 		
+		System.out.println("Artists not found : " + toDelete.size());
 		for(int i = 0; i < toDelete.size(); i++) {
 			deleteNode(toDelete.get(i));
+		}
+	}
+	
+	// Verifies the amount of different genres available and attributes a color to each
+	public void generateColors() {
+		ArrayList<String> genres = new ArrayList<String>();
+		for(int i = 0 ; i < nodeArray.size(); i++) {
+			Node n = nodeArray.get(i);
+			
 		}
 	}
 

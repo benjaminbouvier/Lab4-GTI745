@@ -480,6 +480,9 @@ public class SimpleNetworkVisualizer implements Runnable {
 		ArrayList<String> arrayListOfAllNodes = new ArrayList<String>();
 		ArrayList<String> arrayListOfFirstNodes = new ArrayList<String>();
 		ArrayList<String> arrayListOfSecondNodes = new ArrayList<String>();
+		ArrayList<String> arrayListOfGenres = new ArrayList<String>();
+		ArrayList<String> extraArtistIds = new ArrayList<String>();
+		ArrayList<String> extraArtistNames = new ArrayList<String>();
 		ArrayList<ArrayList<String>> artists = new ArrayList<ArrayList<String>>();
 		// Reading link file and adding to arrays
 		try {
@@ -500,10 +503,16 @@ public class SimpleNetworkVisualizer implements Runnable {
 				}
 
 				if ( fields.length > Math.max(indexOfColumn1,indexOfColumn2)  && !fields[indexOfColumn1].isEmpty() && !fields[indexOfColumn2].isEmpty() ) {
+					if(!extraArtistIds.contains(fields[indexOfColumn2])) {
+						extraArtistIds.add(fields[indexOfColumn2]);
+						extraArtistNames.add(fields[1]);
+						
+					}
 					arrayListOfAllNodes.add(fields[indexOfColumn1]);
 					arrayListOfAllNodes.add(fields[indexOfColumn2]);
 					arrayListOfFirstNodes.add(fields[indexOfColumn1]);
 					arrayListOfSecondNodes.add(fields[indexOfColumn2]);
+					arrayListOfGenres.add(fields[3]);
 				}
 			}
 			is.close();
@@ -571,7 +580,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 		}
 
 		// populate nodes with artist information
-		network.populateNodes(artists);
+		network.populateNodes(artists, extraArtistIds, extraArtistNames);
 
 	}
 
