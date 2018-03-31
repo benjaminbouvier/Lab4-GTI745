@@ -412,16 +412,9 @@ public class Network {
 			
 		}
 		
-		/*for(int i = 0 ; i < nodeArray.size(); i++) {
-			Node n = nodeArray.get(i);
-			if(n.label.equals("0iftxql5ldae")) {
-				deleteNode(n);
-			}
-		}*/
-		
-		/*for(int i = 0; i < toDelete.size(); i++) {
+		for(int i = 0; i < toDelete.size(); i++) {
 			deleteNode(toDelete.get(i));
-		}*/
+		}
 	}
 
 	// In the next few methods, if ``nodes'' is null,

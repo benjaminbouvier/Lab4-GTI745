@@ -556,8 +556,6 @@ public class SimpleNetworkVisualizer implements Runnable {
 			network.addNode( new Node( nodeLabel ) );
 		}
 		
-		// populate nodes with artist information
-		network.populateNodes(artists);
 
 		String [] arrayOfNodes = arrayListOfAllNodes.toArray( new String[ arrayListOfAllNodes.size() ] );
 
@@ -571,6 +569,9 @@ public class SimpleNetworkVisualizer implements Runnable {
 			assert 0 <= nodeIndex2 && nodeIndex2 < network.getNumNodes();
 			network.addEdge( nodeIndex1, nodeIndex2 );
 		}
+
+		// populate nodes with artist information
+		network.populateNodes(artists);
 
 	}
 
