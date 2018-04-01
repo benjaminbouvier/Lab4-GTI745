@@ -11,7 +11,10 @@ public class Network {
 
 	private ArrayList<Node> nodeArray = new ArrayList<Node>();
 	private ArrayList<Node> selectedNodes = new ArrayList<Node>();
+	private ArrayList<ArrayList< Node >> nodesByGenres = new ArrayList<ArrayList< Node >>();
+	private ArrayList<String> globalGenres = new ArrayList<String>();
 	private boolean isForceDirectedLayoutActive = Constant.IS_FORCE_DIRECTED_LAYOUT_ACTIVE_INITIALLY;
+	private boolean isGenreBoxesActive = false;
 
 
 
@@ -132,8 +135,14 @@ public class Network {
 	public boolean isForceDirectedLayoutActive() {
 		return this.isForceDirectedLayoutActive;
 	}
+	public boolean isGenreBoxesActive() {
+		return this.isGenreBoxesActive;
+	}
 	public void setForceDirectedLayoutActive( boolean flag ) {
 		isForceDirectedLayoutActive = flag;
+	}
+	public void setGenreBoxesActive( boolean flag ) {
+		isGenreBoxesActive = flag;
 	}
 
 	public int getNumNodes() {
@@ -429,11 +438,12 @@ public class Network {
 		}
 		
 		generateColors();
+		createGenreGroups();
 	}
 	
 	// Verifies the amount of different genres available and attributes a color to each
 	public void generateColors() {
-		ArrayList<String> globalGenres = new ArrayList<String>();
+		globalGenres.clear();
 		for(int i = 0 ; i < nodeArray.size(); i++) {
 			Node n = nodeArray.get(i);
 			n.setPrimaryGenre();
@@ -446,23 +456,58 @@ public class Network {
 		}
 		
 		Collections.sort(globalGenres);
-		
-		int split = (int) Math.ceil(Math.cbrt(globalGenres.size()));
-		float part = 0.7f/split;
 		for(int i = 0 ; i < nodeArray.size(); i++) {
 			Node n = nodeArray.get(i);
 			for(int j = 0 ; j < globalGenres.size(); j++) {
 				if(n.primary_genre.equals(globalGenres.get(j))) {
-					int temp = j;
-					n.color_b = 0.15f + part * (float) Math.floor(temp/(split*split));
-					temp = temp - (int) Math.floor(temp/(split*split))*split*split;
-					n.color_g = 0.15f + part * (float) Math.floor(temp/split);
-					temp = temp - (int) Math.floor(temp/split)*split;
-					n.color_r = 0.15f + part * temp;
+					ArrayList<Float> colors = colorPicker(j);
+					n.color_r = colors.get(0);
+					n.color_g = colors.get(1);
+					n.color_b = colors.get(2);
 				}
 			}
 		}
 		
+	}
+	
+	public ArrayList<Float> colorPicker(int genreID){
+		int split = (int) Math.ceil(Math.cbrt(globalGenres.size()));
+		float part = 0.7f/split;
+		int temp = genreID;
+		ArrayList<Float> colors = new ArrayList<Float>();
+		
+		colors.add(0.15f + part * (float) Math.floor(temp/(split*split)));
+		temp = temp - (int) Math.floor(temp/(split*split))*split*split;
+		colors.add(0.15f + part * (float) Math.floor(temp/split));
+		temp = temp - (int) Math.floor(temp/split)*split;
+		colors.add(0.15f + part * temp);
+		
+		return colors;
+		
+	}
+	
+	public void createGenreGroups() {
+		nodesByGenres.clear();
+		
+		for(int i=0; i<globalGenres.size(); i++) {
+			nodesByGenres.add(new ArrayList<Node>());
+			
+			for(int j=0; j< nodeArray.size(); j++) {
+				Node n = nodeArray.get(j);
+				if(n.primary_genre.equals(globalGenres.get(i))) {
+					nodesByGenres.get(i).add(n);
+				}
+			}
+		}
+		
+	}
+	
+	public ArrayList<ArrayList< Node >> getGenreGroups() {
+		return nodesByGenres;
+	}
+	
+	public ArrayList< String > getGenreList() {
+		return globalGenres;
 	}
 
 	// In the next few methods, if ``nodes'' is null,

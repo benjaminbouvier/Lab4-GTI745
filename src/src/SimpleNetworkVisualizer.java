@@ -50,9 +50,11 @@ public class SimpleNetworkVisualizer implements Runnable {
 	private static final int C_TOGGLE_FORCE_SIMULATION = 4;
 	private static final int C_FRAME_SELECTED_NODES = 5;
 	private static final int C_FRAME_NETWORK = 6;
+	private static final int C_TOGGLE_GENRE_BOXES = 7;
 
 
 	ArrayList< Point2D > polygonDrawnAroundSelection = new ArrayList< Point2D >(); // coordinates stored in world space
+	ArrayList<ArrayList< Point2D >> polygonDrawnAroundGenres = new ArrayList<ArrayList< Point2D >>(); // coordinates stored in world space
 	private boolean isPolygonUnderMouseCursor = false;
 
 	private int mouse_x, mouse_y, startOfDragX, startOfDragY;
@@ -103,6 +105,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 		radialMenu.setItemLabelAndID( /* 2 for north-east */ 2, "Toggle Node Fixed", C_TOGGLE_NODE_FIXED );
 		radialMenu.setItemLabelAndID( /* 8 for north-west */ 8, "Concentric Layout (radius=3)", C_CONCENTRIC_LAYOUT );
 		radialMenu.setItemLabelAndID( 3, "Toggle Labels of Selected Nodes", C_TOGGLE_LABELS_OF_SELECTED_NODES );
+		radialMenu.setItemLabelAndID( 4, "Toggle Genre Boxes", C_TOGGLE_GENRE_BOXES );
 		radialMenu.setItemLabelAndID( 5, "Toggle Force Simulation", C_TOGGLE_FORCE_SIMULATION );
 		radialMenu.setItemLabelAndID( 6, "Frame Selected Nodes", C_FRAME_SELECTED_NODES );
 		radialMenu.setItemLabelAndID( 7, "Frame Network", C_FRAME_NETWORK );
@@ -583,8 +586,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 		network.populateNodes(artists, extraArtistIds, extraArtistNames);
 
 	}
-
-
+	
 	private void simulateOneStepOfForceDirectedLayout() {
 		//
 		// The spring "force" that we simulate between nodes that share
@@ -808,6 +810,23 @@ public class SimpleNetworkVisualizer implements Runnable {
 		}
 		polygonDrawnAroundSelection = Point2DUtil.computeExpandedPolygon( Point2DUtil.computeConvexHull(nodePoints), Constant.MIN_DISTANCE_FOR_PICKING );
 	}
+	
+	private void computePolygonSurroundingGenres() {
+		ArrayList<ArrayList<Node>> genreGroups = network.getGenreGroups();
+		ArrayList<Point2D> nodePoints = new ArrayList<Point2D>();
+		polygonDrawnAroundGenres.clear();
+		
+		for(int i = 0 ; i < genreGroups.size(); i++) {
+			nodePoints.clear();
+			for(int j = 0; j < genreGroups.get(i).size(); j++) {
+				Node n = genreGroups.get(i).get(j);
+				nodePoints.add( new Point2D( n.x, n.y ) );
+			}
+			polygonDrawnAroundGenres.add(Point2DUtil.computeExpandedPolygon( Point2DUtil.computeConvexHull(nodePoints), Constant.MIN_DISTANCE_FOR_PICKING ));
+		}
+		
+		
+	}
 
 	private void updateHighlighting() {
 		// check if the highlighting of the node has changed
@@ -954,6 +973,9 @@ public class SimpleNetworkVisualizer implements Runnable {
 						break;
 					case C_TOGGLE_LABELS_OF_SELECTED_NODES:
 						network.toggleShowLabelsOfNodes( network.getSelectedNodes() );
+						break;
+					case C_TOGGLE_GENRE_BOXES:
+						network.setGenreBoxesActive( ! network.isGenreBoxesActive() );
 						break;
 					case C_TOGGLE_FORCE_SIMULATION:
 						network.setForceDirectedLayoutActive( ! network.isForceDirectedLayoutActive() );
@@ -1164,7 +1186,20 @@ public class SimpleNetworkVisualizer implements Runnable {
 				gw.drawPolygon( polygonDrawnAroundSelection );
 			}
 			gw.setLineWidth(1);
+			
+			if(network.isGenreBoxesActive()) {
+				computePolygonSurroundingGenres();
+				for(int i = 0; i < polygonDrawnAroundGenres.size(); i++) {
+					ArrayList<Float> colors = network.colorPicker(i);
+					gw.setColor(colors.get(0), colors.get(1), colors.get(2), 0.3f);
+					gw.fillPolygon( polygonDrawnAroundGenres.get(i) );
+					gw.setLineWidth(3);
+					gw.setColor(colors.get(0), colors.get(1), colors.get(2));
+					gw.drawPolygon(polygonDrawnAroundGenres.get(i));
+				}
+			}
 
+			gw.setLineWidth(1);
 
 			drawNetwork();
 
