@@ -1,4 +1,4 @@
-package src;
+
 import java.awt.Color;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.io.InputStream;
 import java.io.StreamTokenizer;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
@@ -48,9 +50,11 @@ public class SimpleNetworkVisualizer implements Runnable {
 	private static final int C_TOGGLE_FORCE_SIMULATION = 4;
 	private static final int C_FRAME_SELECTED_NODES = 5;
 	private static final int C_FRAME_NETWORK = 6;
+	private static final int C_TOGGLE_GENRE_BOXES = 7;
 
 
 	ArrayList< Point2D > polygonDrawnAroundSelection = new ArrayList< Point2D >(); // coordinates stored in world space
+	ArrayList<ArrayList< Point2D >> polygonDrawnAroundGenres = new ArrayList<ArrayList< Point2D >>(); // coordinates stored in world space
 	private boolean isPolygonUnderMouseCursor = false;
 
 	private int mouse_x, mouse_y, startOfDragX, startOfDragY;
@@ -76,17 +80,12 @@ public class SimpleNetworkVisualizer implements Runnable {
 		//network.assignRandomLabelsToAllNodes( random );
 		//network.assignRandomColorsToAllNodes( random );
 		// SECOND WAY TO GET A NETWORK: create it with hardcoded nodes and edges.
-		generateNetwork( 6 );
-		network.assignRandomLabelsToAllNodes( random );
-		network.assignRandomColorsToAllNodes( random );
+		//generateNetwork( 5 );
+		//network.assignRandomLabelsToAllNodes( random );
+		//network.assignRandomColorsToAllNodes( random );
 		// THIRD WAY TO GET A NETWORK: read it in from a file
-		//readInTabDelimitedFileAsNetwork("file:///home/mjm/S/www/code/java/SimpleNetworkVisualizer-2D_JavaApplicationAndApplet/src/data/test.txt",0,0,1);
-
-
-
-
-
-
+		
+		readArtistsAsNetwork("data/Artist_influenced_by.txt","data/Artist.txt",1,0,2);
 
 
 		int w = Constant.INITIAL_WINDOW_WIDTH;
@@ -122,6 +121,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 		radialMenu.setItemLabelAndID( /* 2 for north-east */ 2, "Toggle Node Fixed", C_TOGGLE_NODE_FIXED );
 		radialMenu.setItemLabelAndID( /* 8 for north-west */ 8, "Concentric Layout (radius=3)", C_CONCENTRIC_LAYOUT );
 		radialMenu.setItemLabelAndID( 3, "Toggle Labels of Selected Nodes", C_TOGGLE_LABELS_OF_SELECTED_NODES );
+		radialMenu.setItemLabelAndID( 4, "Toggle Genre Boxes", C_TOGGLE_GENRE_BOXES );
 		radialMenu.setItemLabelAndID( 5, "Toggle Force Simulation", C_TOGGLE_FORCE_SIMULATION );
 		radialMenu.setItemLabelAndID( 6, "Frame Selected Nodes", C_FRAME_SELECTED_NODES );
 		radialMenu.setItemLabelAndID( 7, "Frame Network", C_FRAME_NETWORK );
@@ -537,10 +537,8 @@ public class SimpleNetworkVisualizer implements Runnable {
 		}
 	}
 
-
-
 	private void readInTabDelimitedFileAsNetwork(
-		String URLOfFile, // Example: "file:///home/..."
+		String relPath, // Example: "file:///home/..."
 
 		// useful for skipping over a header in the file
 		int numLinesToSkip,
@@ -555,11 +553,11 @@ public class SimpleNetworkVisualizer implements Runnable {
 		ArrayList<String> arrayListOfFirstNodes = new ArrayList<String>();
 		ArrayList<String> arrayListOfSecondNodes = new ArrayList<String>();
 		try {
-			//FileInputStream fstream = new FileInputStream("data/small_network_for_mike.txt");
-			//DataInputStream in = new DataInputStream(fstream);
-			//BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			is = new URL( URLOfFile ).openStream();
-			BufferedReader br = new BufferedReader( new InputStreamReader(is) );
+			FileInputStream fstream = new FileInputStream(relPath);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			//is = new URL( URLOfFile ).openStream();
+			//BufferedReader br = new BufferedReader( new InputStreamReader(is) );
 
 			String s;
 			while ((s = br.readLine()) != null) {
@@ -613,7 +611,126 @@ public class SimpleNetworkVisualizer implements Runnable {
 
 	}
 
+	private void readArtistsAsNetwork(
+		String linkPath, // Path to the CSV file containing the links between artists
+		String artistsPath, // Path to the CSV file containing the Artist informations
 
+		// useful for skipping over a header in the file
+		int numLinesToSkip,
+
+		// These should be 0 for first column (i.e. before any tabs), 1 for 2nd (after 1st tab), etc.
+		int indexOfColumn1,
+		int indexOfColumn2
+	) {
+		InputStream is = null;
+		int lineIndex = -1;
+		ArrayList<String> arrayListOfAllNodes = new ArrayList<String>();
+		ArrayList<String> arrayListOfFirstNodes = new ArrayList<String>();
+		ArrayList<String> arrayListOfSecondNodes = new ArrayList<String>();
+		ArrayList<String> arrayListOfGenres = new ArrayList<String>();
+		ArrayList<String> extraArtistIds = new ArrayList<String>();
+		ArrayList<String> extraArtistNames = new ArrayList<String>();
+		ArrayList<ArrayList<String>> artists = new ArrayList<ArrayList<String>>();
+		// Reading link file and adding to arrays
+		try {
+			FileInputStream fstream = new FileInputStream(linkPath);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			//is = new URL( URLOfFile ).openStream();
+			//BufferedReader br = new BufferedReader( new InputStreamReader(is) );
+
+			String s;
+			while ((s = br.readLine()) != null) {
+				++ lineIndex;
+				if ( lineIndex < numLinesToSkip ) continue;
+				String fields[] = s.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+				
+				for(int i = 0; i < fields.length; i++) {
+					fields[i] = fields[i].replace("\"", "");
+				}
+
+				if ( fields.length > Math.max(indexOfColumn1,indexOfColumn2)  && !fields[indexOfColumn1].isEmpty() && !fields[indexOfColumn2].isEmpty() ) {
+					if(!extraArtistIds.contains(fields[indexOfColumn2])) {
+						extraArtistIds.add(fields[indexOfColumn2]);
+						extraArtistNames.add(fields[1]);
+						
+					}
+					arrayListOfAllNodes.add(fields[indexOfColumn1]);
+					arrayListOfAllNodes.add(fields[indexOfColumn2]);
+					arrayListOfFirstNodes.add(fields[indexOfColumn1]);
+					arrayListOfSecondNodes.add(fields[indexOfColumn2]);
+					arrayListOfGenres.add(fields[3]);
+				}
+			}
+			is.close();
+		} catch (Exception e) {
+			System.err.println("Error: " + e.getMessage());
+		}
+		
+		// Reading Artists information and adding to array
+		try {
+			FileInputStream fstream = new FileInputStream(artistsPath);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			//is = new URL( URLOfFile ).openStream();
+			//BufferedReader br = new BufferedReader( new InputStreamReader(is) );
+
+			String s;
+			while ((s = br.readLine()) != null) {
+				++ lineIndex;
+				ArrayList<String> artist = new ArrayList<String>();
+				if ( lineIndex < numLinesToSkip ) continue;
+				String fields[] = s.split(",");
+				
+				for(int i = 0; i < fields.length; i++) {
+					fields[i] = fields[i].replace("\"", "");
+					artist.add(fields[i]);
+				}
+				artists.add(artist);
+			}
+			is.close();
+		} catch (Exception e) {
+			System.err.println("Error: " + e.getMessage());
+		}
+
+		//System.out.println("initial size (should be twice number of edges): "+arrayListOfAllNodes.size());
+		// Eliminate duplicate strings
+		HashSet<String> hashSet = new HashSet(arrayListOfAllNodes);
+		arrayListOfAllNodes.clear();
+		arrayListOfAllNodes.addAll( hashSet );
+		//System.out.println("number of nodes (after eliminating duplicates): "+arrayListOfAllNodes.size());
+
+		// Sort in alphabetical order
+		Collections.sort(arrayListOfAllNodes);
+
+		// add nodes to network
+		assert network == null;
+		network = new Network();
+		int i;
+		for ( i = 0; i < arrayListOfAllNodes.size(); ++i ) {
+			String nodeLabel = arrayListOfAllNodes.get(i);
+			network.addNode( new Node( nodeLabel ) );
+		}
+		
+
+		String [] arrayOfNodes = arrayListOfAllNodes.toArray( new String[ arrayListOfAllNodes.size() ] );
+
+		// add edges to network
+		//System.out.println("size of other array lists (should both be number of edges): "+arrayListOfFirstNodes.size()+","+arrayListOfSecondNodes.size());
+		assert arrayListOfFirstNodes.size() == arrayListOfSecondNodes.size();
+		for ( i = 0; i < arrayListOfFirstNodes.size(); ++i ) {
+			int nodeIndex1 = Arrays.binarySearch( arrayOfNodes, arrayListOfFirstNodes.get(i) );
+			int nodeIndex2 = Arrays.binarySearch( arrayOfNodes, arrayListOfSecondNodes.get(i) );
+			assert 0 <= nodeIndex1 && nodeIndex1 < network.getNumNodes();
+			assert 0 <= nodeIndex2 && nodeIndex2 < network.getNumNodes();
+			network.addEdge( nodeIndex1, nodeIndex2 , arrayListOfGenres.get(i));
+		}
+
+		// populate nodes with artist information
+		network.populateNodes(artists, extraArtistIds, extraArtistNames);
+
+	}
+	
 	private void simulateOneStepOfForceDirectedLayout() {
 		//
 		// The spring "force" that we simulate between nodes that share
@@ -655,8 +772,8 @@ public class SimpleNetworkVisualizer implements Runnable {
 		// we could give the user direct control over R,
 		// and use the above equation to compute alpha.
 		//
-		final float R = 0.05f;
-		final float k = 1;
+		final float R = 100f;
+		final float k = 0.05f;
 		final float alpha = R * k * Constant.SPRING_REST_LENGTH * Constant.SPRING_REST_LENGTH * Constant.SPRING_REST_LENGTH;
 		final float timeStep = 0.04f;
 
@@ -837,6 +954,23 @@ public class SimpleNetworkVisualizer implements Runnable {
 		}
 		polygonDrawnAroundSelection = Point2DUtil.computeExpandedPolygon( Point2DUtil.computeConvexHull(nodePoints), Constant.MIN_DISTANCE_FOR_PICKING );
 	}
+	
+	private void computePolygonSurroundingGenres() {
+		ArrayList<ArrayList<Node>> genreGroups = network.getGenreGroups();
+		ArrayList<Point2D> nodePoints = new ArrayList<Point2D>();
+		polygonDrawnAroundGenres.clear();
+		
+		for(int i = 0 ; i < genreGroups.size(); i++) {
+			nodePoints.clear();
+			for(int j = 0; j < genreGroups.get(i).size(); j++) {
+				Node n = genreGroups.get(i).get(j);
+				nodePoints.add( new Point2D( n.x, n.y ) );
+			}
+			polygonDrawnAroundGenres.add(Point2DUtil.computeExpandedPolygon( Point2DUtil.computeConvexHull(nodePoints), Constant.MIN_DISTANCE_FOR_PICKING ));
+		}
+		
+		
+	}
 
 	private void updateHighlighting() {
 		// check if the highlighting of the node has changed
@@ -983,6 +1117,9 @@ public class SimpleNetworkVisualizer implements Runnable {
 						break;
 					case C_TOGGLE_LABELS_OF_SELECTED_NODES:
 						network.toggleShowLabelsOfNodes( network.getSelectedNodes() );
+						break;
+					case C_TOGGLE_GENRE_BOXES:
+						network.setGenreBoxesActive( ! network.isGenreBoxesActive() );
 						break;
 					case C_TOGGLE_FORCE_SIMULATION:
 						network.setForceDirectedLayoutActive( ! network.isForceDirectedLayoutActive() );
@@ -1137,14 +1274,14 @@ public class SimpleNetworkVisualizer implements Runnable {
 		for ( int i = 0; i < network.getNumNodes(); ++i ) {
 			Node n = network.getNode(i);
 			if ( n == nodeUnderMouseCursor ) {
-				drawPartOfNode( n, Constant.NODE_RADIUS+2, true, hiliteColor );
+				drawPartOfNode( n, (Constant.NODE_RADIUS+n.neighbours.size()/12)+2, true, hiliteColor );
 			}
-			drawPartOfNode( n, Constant.NODE_RADIUS, true,
+			drawPartOfNode( n, (Constant.NODE_RADIUS+n.neighbours.size()/12), true,
 				Constant.USE_ALPHA_COMPOSITING
 					? new Color(n.color_r,n.color_g,n.color_b,1.0f)
 					: new Color(n.color_r,n.color_g,n.color_b)
 			);
-			drawPartOfNode( n, Constant.NODE_RADIUS, false, foregroundColor );
+			drawPartOfNode( n, (Constant.NODE_RADIUS+n.neighbours.size()/12), false, foregroundColor );
 		}
 		for ( int i = 0; i < network.getNumNodes(); ++i ) {
 			Node n = network.getNode(i);
@@ -1158,16 +1295,16 @@ public class SimpleNetworkVisualizer implements Runnable {
 							+ ";cc=" + n.clusteringCoefficient;
 					label = label + "]";
 				}
-				drawBackgroundOfLabelOfNode( label, n.x, n.y, Constant.NODE_RADIUS, true, halfOpaqueBackgroundColor );
+				drawBackgroundOfLabelOfNode( label, n.x, n.y, (Constant.NODE_RADIUS+n.neighbours.size()/12), true, halfOpaqueBackgroundColor );
 				if ( n == nodeUnderMouseCursor )
-					drawBackgroundOfLabelOfNode( label, n.x, n.y, Constant.NODE_RADIUS, false, opaqueForegroundColor );
-				drawLabelOfNode( label, n.x, n.y, Constant.NODE_RADIUS, foregroundColor );
+					drawBackgroundOfLabelOfNode( label, n.x, n.y, (Constant.NODE_RADIUS+n.neighbours.size()/12), false, opaqueForegroundColor );
+				drawLabelOfNode( label, n.x, n.y, (Constant.NODE_RADIUS+n.neighbours.size()/12), foregroundColor );
 			}
 		}
 		for ( int i = 0; i < network.getNumNodes(); ++i ) {
 			Node n = network.getNode(i);
 			if ( network.isNodeSelected(n) )
-				drawPartOfNode( n, Constant.NODE_RADIUS+2, false, hiliteColor );
+				drawPartOfNode( n, (Constant.NODE_RADIUS+n.neighbours.size()/12)+2, false, hiliteColor );
 		}
 
 	}
@@ -1193,7 +1330,20 @@ public class SimpleNetworkVisualizer implements Runnable {
 				gw.drawPolygon( polygonDrawnAroundSelection );
 			}
 			gw.setLineWidth(1);
+			
+			if(network.isGenreBoxesActive()) {
+				computePolygonSurroundingGenres();
+				for(int i = 0; i < polygonDrawnAroundGenres.size(); i++) {
+					ArrayList<Float> colors = network.colorPicker(i);
+					gw.setColor(colors.get(0), colors.get(1), colors.get(2), 0.3f);
+					gw.fillPolygon( polygonDrawnAroundGenres.get(i) );
+					gw.setLineWidth(3);
+					gw.setColor(colors.get(0), colors.get(1), colors.get(2));
+					gw.drawPolygon(polygonDrawnAroundGenres.get(i));
+				}
+			}
 
+			gw.setLineWidth(1);
 
 			drawNetwork();
 

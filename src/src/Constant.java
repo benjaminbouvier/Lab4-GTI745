@@ -1,5 +1,3 @@
-package src;
-
 
 public class Constant {
 
@@ -12,7 +10,7 @@ public class Constant {
 	public static final float MENU_ALPHA = 0.6f;
 
 	// These are all in the same length units.
-	public static final float SPRING_REST_LENGTH = 50;
+	public static final float SPRING_REST_LENGTH = 25;
 	public static final float MIN_DISTANCE_FOR_PICKING = 11;
 	public static final float NODE_RADIUS = 6;
 
@@ -20,8 +18,8 @@ public class Constant {
 	public static final int TEXT_HEIGHT = 12;
 	public static final int MARGIN_AROUND_TEXT = 6;
 	public static final int MARGIN_BETWEEN_ITEMS = 6;
-	public static final int INITIAL_WINDOW_WIDTH = 4000;
-	public static final int INITIAL_WINDOW_HEIGHT = 4000;
+	public static final int INITIAL_WINDOW_WIDTH = 1920;
+	public static final int INITIAL_WINDOW_HEIGHT = 1080;
 
 }
 

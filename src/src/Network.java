@@ -1,5 +1,6 @@
-package src;
+
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -10,7 +11,10 @@ public class Network {
 
 	private ArrayList<Node> nodeArray = new ArrayList<Node>();
 	private ArrayList<Node> selectedNodes = new ArrayList<Node>();
+	private ArrayList<ArrayList< Node >> nodesByGenres = new ArrayList<ArrayList< Node >>();
+	private ArrayList<String> globalGenres = new ArrayList<String>();
 	private boolean isForceDirectedLayoutActive = Constant.IS_FORCE_DIRECTED_LAYOUT_ACTIVE_INITIALLY;
+	private boolean isGenreBoxesActive = false;
 
 
 
@@ -151,8 +155,14 @@ public class Network {
 	public boolean isForceDirectedLayoutActive() {
 		return this.isForceDirectedLayoutActive;
 	}
+	public boolean isGenreBoxesActive() {
+		return this.isGenreBoxesActive;
+	}
 	public void setForceDirectedLayoutActive( boolean flag ) {
 		isForceDirectedLayoutActive = flag;
+	}
+	public void setGenreBoxesActive( boolean flag ) {
+		isGenreBoxesActive = flag;
 	}
 
 	public int getNumNodes() {
@@ -177,8 +187,22 @@ public class Network {
 			n2.neighbours.add( n1 );
 		}
 	}
+	public void addEdge( Node n1, Node n2 , String genre) {
+		if ( n1 == n2 || n1 == null || n2 == null ) return;
+		if ( ! n1.neighbours.contains(n2) ) {
+			n1.neighbours.add( n2 );
+			n1.genres.add(genre);
+		}
+		if ( ! n2.neighbours.contains(n1) ) {
+			n2.neighbours.add( n1 );
+			n2.genres.add(genre);
+		}
+	}
 	public void addEdge( int nodeIndex1, int nodeIndex2 ) {
-		addEdge( getNode(nodeIndex1), getNode(nodeIndex2) );
+		addEdge( getNode(nodeIndex1), getNode(nodeIndex2));
+	}
+	public void addEdge( int nodeIndex1, int nodeIndex2, String genre ) {
+		addEdge( getNode(nodeIndex1), getNode(nodeIndex2) , genre);
 	}
 
 	public boolean areNodesAdjacent( Node n1, Node n2 ) {
@@ -381,16 +405,130 @@ public class Network {
 		return null;
 	}
 
-
-
-
-
-
-
-
-
-
-
+	// Fills all nodes with the information about the related artist
+	public void populateNodes(ArrayList<ArrayList<String>> artists, ArrayList<String> extraIds, ArrayList<String> extraNames) {
+		ArrayList<Node> toDelete = new ArrayList<Node>();
+		for(int i = 0 ; i < nodeArray.size(); i++) {
+			Node n = nodeArray.get(i);
+			boolean found = false;
+			int j = 0;
+			
+			while(!found && j<artists.size()) {
+				
+				if(n.label.equals(artists.get(j).get(0))) {					
+					n.pgid = n.label;
+					n.setArtistInfos(artists.get(j).get(1),
+							artists.get(j).get(2),
+							artists.get(j).get(3),
+							artists.get(j).get(4),
+							artists.get(j).get(5),
+							artists.get(j).get(6),
+							artists.get(j).get(7),
+							artists.get(j).get(8),
+							artists.get(j).get(9),
+							artists.get(j).get(10)
+							);
+					n.label = n.artist;
+					found = true;
+				}
+				j ++;
+			}
+			
+			j=0;
+			while(!found && j<extraIds.size()) {
+				if(n.label.equals(extraIds.get(j)) && !extraNames.get(j).isEmpty()) {
+					n.pgid = n.label;
+					n.artist = extraNames.get(j);
+					n.label = n.artist;
+					found = true;
+				}
+				j++;
+			}
+			
+			if(!found) {
+				//System.out.println("Not found : " + n.label + "\n");
+				toDelete.add(n);
+			}
+			
+		}
+		
+		System.out.println("Artists not found : " + toDelete.size());
+		for(int i = 0; i < toDelete.size(); i++) {
+			deleteNode(toDelete.get(i));
+		}
+		
+		generateColors();
+		createGenreGroups();
+	}
+	
+	// Verifies the amount of different genres available and attributes a color to each
+	public void generateColors() {
+		globalGenres.clear();
+		for(int i = 0 ; i < nodeArray.size(); i++) {
+			Node n = nodeArray.get(i);
+			n.setPrimaryGenre();
+			n.label = n.label + " - " + n.primary_genre;
+			for(int j=0; j<n.genres.size(); j++) {
+				if(!globalGenres.contains(n.genres.get(j))) {
+					globalGenres.add(n.genres.get(j));
+				}
+			}
+		}
+		
+		Collections.sort(globalGenres);
+		for(int i = 0 ; i < nodeArray.size(); i++) {
+			Node n = nodeArray.get(i);
+			for(int j = 0 ; j < globalGenres.size(); j++) {
+				if(n.primary_genre.equals(globalGenres.get(j))) {
+					ArrayList<Float> colors = colorPicker(j);
+					n.color_r = colors.get(0);
+					n.color_g = colors.get(1);
+					n.color_b = colors.get(2);
+				}
+			}
+		}
+		
+	}
+	
+	public ArrayList<Float> colorPicker(int genreID){
+		int split = (int) Math.ceil(Math.cbrt(globalGenres.size()));
+		float part = 0.7f/split;
+		int temp = genreID;
+		ArrayList<Float> colors = new ArrayList<Float>();
+		
+		colors.add(0.15f + part * (float) Math.floor(temp/(split*split)));
+		temp = temp - (int) Math.floor(temp/(split*split))*split*split;
+		colors.add(0.15f + part * (float) Math.floor(temp/split));
+		temp = temp - (int) Math.floor(temp/split)*split;
+		colors.add(0.15f + part * temp);
+		
+		return colors;
+		
+	}
+	
+	public void createGenreGroups() {
+		nodesByGenres.clear();
+		
+		for(int i=0; i<globalGenres.size(); i++) {
+			nodesByGenres.add(new ArrayList<Node>());
+			
+			for(int j=0; j< nodeArray.size(); j++) {
+				Node n = nodeArray.get(j);
+				if(n.primary_genre.equals(globalGenres.get(i))) {
+					nodesByGenres.get(i).add(n);
+				}
+			}
+		}
+		
+	}
+	
+	public ArrayList<ArrayList< Node >> getGenreGroups() {
+		return nodesByGenres;
+	}
+	
+	public ArrayList< String > getGenreList() {
+		return globalGenres;
+	}
 
 	// In the next few methods, if ``nodes'' is null,
 	// the operation is performed on all nodes in the network,
