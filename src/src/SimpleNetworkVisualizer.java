@@ -626,8 +626,8 @@ public class SimpleNetworkVisualizer implements Runnable {
 		// we could give the user direct control over R,
 		// and use the above equation to compute alpha.
 		//
-		final float R = 0.05f;
-		final float k = 1;
+		final float R = 100f;
+		final float k = 0.05f;
 		final float alpha = R * k * Constant.SPRING_REST_LENGTH * Constant.SPRING_REST_LENGTH * Constant.SPRING_REST_LENGTH;
 		final float timeStep = 0.04f;
 
