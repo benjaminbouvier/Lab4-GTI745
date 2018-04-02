@@ -15,6 +15,9 @@ public class Network {
 	private ArrayList<Node> selectedNodes = new ArrayList<Node>();
 	private ArrayList<ArrayList< Node >> nodesByGenres = new ArrayList<ArrayList< Node >>();
 	private ArrayList<String> globalGenres = new ArrayList<String>();
+	private ArrayList<Node> neighboursArray = new ArrayList<Node>();
+	private ArrayList<Node> visitedNodes = new ArrayList<Node>();
+	private Node currentNode = new Node();
 	private boolean isForceDirectedLayoutActive = Constant.IS_FORCE_DIRECTED_LAYOUT_ACTIVE_INITIALLY;
 	private boolean isGenreBoxesActive = false;
 
@@ -150,6 +153,64 @@ public class Network {
 		n.x=x;
 		n.y=y;
 	}
+	
+	public void filterNetwork(int index){
+		currentNode = getNode(index);
+		
+		for (int i = 0; i < currentNode.neighbours.size(); i++){
+			clearNeighboursArray();
+			if(currentNode.neighbours.size() > 1 && !currentNode.neighbours.isEmpty())
+				recursiveDeleteRedundancy(currentNode.neighbours.get(i));
+			if(neighboursArray.size() > 1){
+				for(Node node : neighboursArray){
+					removeEdge(currentNode, node);
+					currentNode.neighbours.remove(node);
+					node.neighbours.remove(currentNode);
+				}
+			}		
+		}
+	}
+	
+	public void clearNeighboursArray(){
+		neighboursArray.clear();
+		visitedNodes.clear();
+	}
+	private void recursiveDeleteRedundancy(Node node){
+		if (visitedNodes.contains(node)) return;
+		for(int i = 0; i < node.neighbours.size(); i++){
+			//boolean deleted = false;
+			
+			if (currentNode.neighbours.contains(node.neighbours.get(i))){
+				neighboursArray.add(node.neighbours.get(i));
+			}
+			
+			//add to visited list
+			if (!visitedNodes.contains(node)){
+				visitedNodes.add(node);		
+			}
+			
+			if(node.neighbours.size() > 0 
+					&& !node.neighbours.isEmpty() 
+					&& !visitedNodes.contains(node.neighbours.get(i))
+					&& !currentNode.equals(node.neighbours.get(i))){
+				recursiveDeleteRedundancy(node.neighbours.get(i));
+			}
+			else
+				return;
+		}
+	}
+	
+	//Get a list of all the neighbours in a chain
+//	private void recursiveNeighboursListing(Node currentNode){
+//		for(int i = 0; i < currentNode.neighbours.size(); i++){
+//			if (!neighboursArray.contains(currentNode.neighbours.get(i))){
+//				neighboursArray.add(currentNode.neighbours.get(i));
+//				if (currentNode.neighbours.size() > 0)
+//					recursiveNeighboursListing(currentNode.neighbours.get(i));
+//			}
+//			
+//		}
+//	}
 	//fin modification
 	
 	
