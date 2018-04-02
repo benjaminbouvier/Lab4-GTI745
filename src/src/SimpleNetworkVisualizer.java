@@ -1,3 +1,5 @@
+package src;
+
 
 import java.awt.Color;
 import java.awt.event.InputEvent;
@@ -51,6 +53,9 @@ public class SimpleNetworkVisualizer implements Runnable {
 	private static final int C_FRAME_SELECTED_NODES = 5;
 	private static final int C_FRAME_NETWORK = 6;
 	private static final int C_TOGGLE_GENRE_BOXES = 7;
+	private static final int C_LAYOUT_CIRCULAIRE = 8;
+	private static final int C_DIAGRAMME_ARC = 9;
+	private static final int C_SHOW_SELECTED_NODES=10;
 
 
 	ArrayList< Point2D > polygonDrawnAroundSelection = new ArrayList< Point2D >(); // coordinates stored in world space
@@ -60,6 +65,8 @@ public class SimpleNetworkVisualizer implements Runnable {
 	private int mouse_x, mouse_y, startOfDragX, startOfDragY;
 	private boolean isLeftMouseButtonDown = false;
 	private boolean isRightMouseButtonDown = false;
+	private boolean traceArc = false;
+	private boolean selectedNodes = false;
 
 
 	public SimpleNetworkVisualizer( GraphicsFramework gf, GraphicsWrapper gw ) {
@@ -85,8 +92,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 		//network.assignRandomColorsToAllNodes( random );
 		// THIRD WAY TO GET A NETWORK: read it in from a file
 		
-		readArtistsAsNetwork("data/Artist_influenced_by.txt","data/Artist.txt",1,0,2);
-
+		readArtistsAsNetwork("src/data/Artist_influenced_by.txt","src/data/Artist.txt",1,0,2);
 
 		int w = Constant.INITIAL_WINDOW_WIDTH;
 		int h = Constant.INITIAL_WINDOW_HEIGHT;
@@ -106,8 +112,8 @@ public class SimpleNetworkVisualizer implements Runnable {
 			System.out.println(network.getNodes().get(i).getIndex());
 		}*/
 		
-		heuristique();
-		layoutCirculaire();
+		//heuristique();
+		//layoutCirculaire();
 		
 		/*System.out.println("apres");
 		for(int i=0;i<network.getNumNodes();i++){  
@@ -125,11 +131,38 @@ public class SimpleNetworkVisualizer implements Runnable {
 		radialMenu.setItemLabelAndID( 5, "Toggle Force Simulation", C_TOGGLE_FORCE_SIMULATION );
 		radialMenu.setItemLabelAndID( 6, "Frame Selected Nodes", C_FRAME_SELECTED_NODES );
 		radialMenu.setItemLabelAndID( 7, "Frame Network", C_FRAME_NETWORK );
+		radialMenu.setItemLabelAndID( 8, "Layout Circulaire", C_LAYOUT_CIRCULAIRE );
+		radialMenu.setItemLabelAndID( 2, "Diagramme en Arc", C_DIAGRAMME_ARC );
+		radialMenu.setItemLabelAndID( 1, "Show Only Selected Nodes", C_SHOW_SELECTED_NODES );
 		
 
 	}
 	
 	// debut de la modification 
+	public void setTraceArc(boolean b){
+		traceArc=b;
+		
+	}
+	
+	public void setSelectedNodes(boolean b){
+		selectedNodes=b;
+		
+	}
+	
+	
+	public void diagrammeArc(){
+		int i;
+	    int numNodes = network.getNumNodes();
+	    
+	    float Xdiagramme= Constant.INITIAL_WINDOW_WIDTH /2;
+	    float position = Constant.INITIAL_WINDOW_HEIGHT / 2;
+	    float separation=40;
+	    
+	    for (i = 0; i < numNodes; i++) {
+	    	network.UpdateNodePosition(Xdiagramme,position,i);
+	    	position+=separation;
+	    }
+	}
 	
 	public void layoutCirculaire(){
 		int i;
@@ -169,8 +202,8 @@ public class SimpleNetworkVisualizer implements Runnable {
 		Collections.shuffle(arcDisposition);  //tableau d'entiers differents repartis aleatoirement
 
 		
-		while(!stop && iteration<(int)Math.sqrt(nbNode)){
-		//while(!stop && iteration<nbNode){
+		//while(!stop && iteration<(int)Math.sqrt(nbNode)){
+		while(!stop && iteration<nbNode){
 			
 			for(i=0;i<nbNode;i++){  
 				arcPoids.set(i,0.0);
@@ -210,7 +243,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 			iteration++;
 		}
 		
-		System.out.println(iteration +"   "+(int)Math.sqrt(nbNode));
+		//System.out.println(iteration +"   "+(int)Math.sqrt(nbNode));
 		for(i=0;i<nbNode;i++){  // Positionner les noeud suivant la disposition determinee
 			j=0;
 			while(j<nbNode && arcDisposition.get(j)!=i) j++;
@@ -1122,6 +1155,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 						network.setGenreBoxesActive( ! network.isGenreBoxesActive() );
 						break;
 					case C_TOGGLE_FORCE_SIMULATION:
+						setTraceArc(false);
 						network.setForceDirectedLayoutActive( ! network.isForceDirectedLayoutActive() );
 						break;
 					case C_FRAME_SELECTED_NODES:
@@ -1130,7 +1164,26 @@ public class SimpleNetworkVisualizer implements Runnable {
 					case C_FRAME_NETWORK:
 						gw.frame(network.getBoundingRectangle(null),true);
 						break;
+					case C_LAYOUT_CIRCULAIRE:
+						//setTraceArc(true);
+						setTraceArc(false);
+						heuristique();
+						layoutCirculaire();
+						gw.frame(network.getBoundingRectangle(null),true);
+						break;
+					case C_DIAGRAMME_ARC:
+						setTraceArc(true);
+						//setTraceArc(false);
+						heuristique();
+						diagrammeArc();
+						break;
+					case C_SHOW_SELECTED_NODES:
+						//setTraceArc(true);
+						setSelectedNodes(!selectedNodes);
+						break;
 					}
+					
+					
 				}
 			}
 			else if (
@@ -1256,18 +1309,82 @@ public class SimpleNetworkVisualizer implements Runnable {
 
 	private void drawNetwork() {
 		gw.setColor( 0,0,0 );
+		float center_x,center_y,radius,startAngle,angleExtent;
+		//int numNodes = network.getNumNodes();
+		//float moitie=numNodes/2,vecteurx,vecteury,produitScalaire;
+		Color hiliteColor = new Color(1.0f,0.0f,0.0f);
+		Color foregroundColor = new Color(0.0f,0.0f,0.0f);
+		boolean colorChange=false;
 		for ( int i = 0; i < network.getNumNodes(); ++i ) {
 			Node n = network.getNode(i);
 			for ( int j = 0; j < n.neighbours.size(); ++j ) {
 				Node n2 = n.neighbours.get(j);
 				int n2_index = network.getIndexOfNode( n2 );
+				//modification pour tracer des arcs diagramme en arc
 				if ( n2_index > i ) {
-					gw.drawLine( n.x, n.y, n2.x, n2.y );
+					
+					if (n2==nodeUnderMouseCursor || n==nodeUnderMouseCursor){
+						gw.setColor(hiliteColor);
+						colorChange=true;
+					}
+					if (traceArc ){
+						center_x=n.x;
+						center_y=(n.y+n2.y)/2;
+					    radius=(n2.y-n.y)/2;
+					    angleExtent=(float) Math.PI;
+					    startAngle=(float) (Math.PI/2);
+					    
+					    /*   modification pour layout circulaire non fonctionnelle
+					    vecteurx=(n2.x-n.x);
+					    vecteury=(n2.y-n.y);
+					    produitScalaire=-vecteurx; //produit scalaire avec le veteur normal (1,0)
+					    startAngle=(float) Math.acos(produitScalaire/radius);
+					    if(n.x>=0 && n2.x>=0){
+					    	if((n.y>=0 && n2.y>=0) || (n.y<0 && n2.y<0) ){
+					    		startAngle=(float) (Math.PI-startAngle);
+					    	}
+					    }else if(n.x>=0 && n2.x<0){
+					    	if(n.y>=0 && n2.y<0 ){
+					    		if (n2_index-n.getIndex()<moitie){
+					    			startAngle=(float) (Math.PI+startAngle);
+					    		}
+					    	}
+					    }else if(n.x<0 && n2.x>=0){
+					    	if(n.y>=0){
+					    		if (n2_index-n.getIndex()<moitie){
+					    			startAngle=-(float) (Math.PI-startAngle);
+					    		}
+					    	}else{
+					    			startAngle=-(float) (Math.PI-startAngle);
+					    	}
+					    }*/
+					    
+					    if (selectedNodes){
+					    	if (network.isNodeSelected(n) || network.isNodeSelected(n2)){
+					    		gw.drawArc(center_x,center_y,radius,startAngle,angleExtent);
+					    	}
+					    }else{
+					    	gw.drawArc(center_x,center_y,radius,startAngle,angleExtent);
+					    }
+						
+					}else{
+						if (selectedNodes){
+					    	if (network.isNodeSelected(n) || network.isNodeSelected(n2)){
+					    		gw.drawLine( n.x, n.y, n2.x, n2.y );
+					    	}
+					    }else{
+					    	gw.drawLine( n.x, n.y, n2.x, n2.y );
+					    }
+					}
+					if (colorChange){
+						gw.setColor(foregroundColor);
+						colorChange=false;
+					}
 				}
 			}
 		}
-		Color hiliteColor = new Color(1.0f,0.0f,0.0f);
-		Color foregroundColor = new Color(0.0f,0.0f,0.0f);
+		//Color hiliteColor = new Color(1.0f,0.0f,0.0f);
+		//Color foregroundColor = new Color(0.0f,0.0f,0.0f);
 		Color opaqueForegroundColor = new Color(0,0,0);
 		Color halfOpaqueBackgroundColor = Constant.USE_ALPHA_COMPOSITING ? new Color(255,255,255,128) : new Color(255,255,255);
 
@@ -1283,6 +1400,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 			);
 			drawPartOfNode( n, (Constant.NODE_RADIUS+n.neighbours.size()/12), false, foregroundColor );
 		}
+		//gw.setFontHeight(Constant.TEXT_HEIGHT);
 		for ( int i = 0; i < network.getNumNodes(); ++i ) {
 			Node n = network.getNode(i);
 			if ( n.showLabel || n == nodeUnderMouseCursor ) {
