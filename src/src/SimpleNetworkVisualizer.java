@@ -56,6 +56,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 	private static final int C_LAYOUT_CIRCULAIRE = 8;
 	private static final int C_DIAGRAMME_ARC = 9;
 	private static final int C_SHOW_SELECTED_NODES=10;
+	private static final int C_FILTER_NETWORK=11;
 
 
 	ArrayList< Point2D > polygonDrawnAroundSelection = new ArrayList< Point2D >(); // coordinates stored in world space
@@ -134,7 +135,7 @@ public class SimpleNetworkVisualizer implements Runnable {
 		radialMenu.setItemLabelAndID( 8, "Layout Circulaire", C_LAYOUT_CIRCULAIRE );
 		radialMenu.setItemLabelAndID( 2, "Diagramme en Arc", C_DIAGRAMME_ARC );
 		radialMenu.setItemLabelAndID( 1, "Show Only Selected Nodes", C_SHOW_SELECTED_NODES );
-		
+		radialMenu.setItemLabelAndID( 7, "Filter Network", C_FILTER_NETWORK);
 
 	}
 	
@@ -285,6 +286,14 @@ public class SimpleNetworkVisualizer implements Runnable {
 			m.set(i,j);
 		}
 		
+	}
+	
+	public void filterNetwork(){
+		int numNodes = network.getNumNodes();
+		network.clearNeighboursArray();
+		for(int i = 0; i < numNodes; i ++){
+			network.filterNetwork(i);
+		}
 	}
 	
 	//fin de la modification
@@ -1180,6 +1189,9 @@ public class SimpleNetworkVisualizer implements Runnable {
 					case C_SHOW_SELECTED_NODES:
 						//setTraceArc(true);
 						setSelectedNodes(!selectedNodes);
+						break;
+					case C_FILTER_NETWORK:
+						filterNetwork();
 						break;
 					}
 					
