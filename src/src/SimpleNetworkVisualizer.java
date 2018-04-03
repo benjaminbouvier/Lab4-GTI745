@@ -290,7 +290,6 @@ public class SimpleNetworkVisualizer implements Runnable {
 	
 	public void filterNetwork(){
 		int numNodes = network.getNumNodes();
-		network.clearNeighboursArray();
 		for(int i = 0; i < numNodes; i ++){
 			network.filterNetwork(i);
 		}
