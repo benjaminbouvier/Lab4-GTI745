@@ -27,6 +27,7 @@ public class Node {
 	public String born_name;
 	public boolean is_solo;
 	public String primary_genre;
+	public int extraSize;
 	
 
 	public float x = 0, y = 0; // position in world space
@@ -108,6 +109,10 @@ public class Node {
 			this.is_solo = false;
 		}
 		
+	}
+	
+	public void setExtraSize() {
+		this.extraSize = this.neighbours.size()/12;
 	}
 	
 	public void setPrimaryGenre() {

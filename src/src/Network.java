@@ -487,7 +487,7 @@ public class Network {
 				if(n.label.equals(extraIds.get(j)) && !extraNames.get(j).isEmpty()) {
 					n.pgid = n.label;
 					n.artist = extraNames.get(j);
-					n.label = n.artist;
+					n.label = n.artist + "*";
 					found = true;
 				}
 				j++;
@@ -496,6 +496,9 @@ public class Network {
 			if(!found) {
 				//System.out.println("Not found : " + n.label + "\n");
 				toDelete.add(n);
+			}
+			else {
+				n.setExtraSize();
 			}
 			
 		}
@@ -540,15 +543,15 @@ public class Network {
 	
 	public ArrayList<Float> colorPicker(int genreID){
 		int split = (int) Math.ceil(Math.cbrt(globalGenres.size()));
-		float part = 0.7f/split;
+		float part = 0.8f/split;
 		int temp = genreID;
 		ArrayList<Float> colors = new ArrayList<Float>();
 		
-		colors.add(0.15f + part * (float) Math.floor(temp/(split*split)));
+		colors.add(0.1f + part * (float) Math.floor(temp/(split*split)));
 		temp = temp - (int) Math.floor(temp/(split*split))*split*split;
-		colors.add(0.15f + part * (float) Math.floor(temp/split));
+		colors.add(0.1f + part * (float) Math.floor(temp/split));
 		temp = temp - (int) Math.floor(temp/split)*split;
-		colors.add(0.15f + part * temp);
+		colors.add(0.1f + part * temp);
 		
 		return colors;
 		

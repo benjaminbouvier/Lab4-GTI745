@@ -1402,14 +1402,14 @@ public class SimpleNetworkVisualizer implements Runnable {
 		for ( int i = 0; i < network.getNumNodes(); ++i ) {
 			Node n = network.getNode(i);
 			if ( n == nodeUnderMouseCursor ) {
-				drawPartOfNode( n, (Constant.NODE_RADIUS+n.neighbours.size()/12)+2, true, hiliteColor );
+				drawPartOfNode( n, Constant.NODE_RADIUS+n.extraSize+2, true, hiliteColor );
 			}
-			drawPartOfNode( n, (Constant.NODE_RADIUS+n.neighbours.size()/12), true,
+			drawPartOfNode( n, Constant.NODE_RADIUS+n.extraSize, true,
 				Constant.USE_ALPHA_COMPOSITING
 					? new Color(n.color_r,n.color_g,n.color_b,1.0f)
 					: new Color(n.color_r,n.color_g,n.color_b)
 			);
-			drawPartOfNode( n, (Constant.NODE_RADIUS+n.neighbours.size()/12), false, foregroundColor );
+			drawPartOfNode( n, Constant.NODE_RADIUS+n.extraSize, false, foregroundColor );
 		}
 		//gw.setFontHeight(Constant.TEXT_HEIGHT);
 		for ( int i = 0; i < network.getNumNodes(); ++i ) {
@@ -1424,16 +1424,16 @@ public class SimpleNetworkVisualizer implements Runnable {
 							+ ";cc=" + n.clusteringCoefficient;
 					label = label + "]";
 				}
-				drawBackgroundOfLabelOfNode( label, n.x, n.y, (Constant.NODE_RADIUS+n.neighbours.size()/12), true, halfOpaqueBackgroundColor );
+				drawBackgroundOfLabelOfNode( label, n.x, n.y, Constant.NODE_RADIUS+n.extraSize, true, halfOpaqueBackgroundColor );
 				if ( n == nodeUnderMouseCursor )
-					drawBackgroundOfLabelOfNode( label, n.x, n.y, (Constant.NODE_RADIUS+n.neighbours.size()/12), false, opaqueForegroundColor );
-				drawLabelOfNode( label, n.x, n.y, (Constant.NODE_RADIUS+n.neighbours.size()/12), foregroundColor );
+					drawBackgroundOfLabelOfNode( label, n.x, n.y, Constant.NODE_RADIUS+n.extraSize, false, opaqueForegroundColor );
+				drawLabelOfNode( label, n.x, n.y, Constant.NODE_RADIUS+n.extraSize, foregroundColor );
 			}
 		}
 		for ( int i = 0; i < network.getNumNodes(); ++i ) {
 			Node n = network.getNode(i);
 			if ( network.isNodeSelected(n) )
-				drawPartOfNode( n, (Constant.NODE_RADIUS+n.neighbours.size()/12)+2, false, hiliteColor );
+				drawPartOfNode( n, Constant.NODE_RADIUS+n.extraSize+2, false, hiliteColor );
 		}
 
 	}
