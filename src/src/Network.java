@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 // import java.awt.Color;
@@ -153,15 +154,17 @@ public class Network {
 		n.x=x;
 		n.y=y;
 	}
-	
+
 	public void filterNetwork(int index){
 		currentNode = getNode(index);
-		
 		for (int i = 0; i < currentNode.neighbours.size(); i++){
+			//clear the visited nodes list and nodes set for removal
 			clearNeighboursArray();
-			if(currentNode.neighbours.size() > 1 && !currentNode.neighbours.isEmpty())
+			if(currentNode.neighbours.size() > 1 && !currentNode.neighbours.isEmpty()){
 				recursiveDeleteRedundancy(currentNode.neighbours.get(i));
+			}
 			if(neighboursArray.size() > 1){
+				//Delete the edges that are in the list based on the recursive call
 				for(Node node : neighboursArray){
 					removeEdge(currentNode, node);
 					currentNode.neighbours.remove(node);
@@ -171,46 +174,26 @@ public class Network {
 		}
 	}
 	
-	public void clearNeighboursArray(){
+	private void clearNeighboursArray(){
 		neighboursArray.clear();
 		visitedNodes.clear();
 	}
 	private void recursiveDeleteRedundancy(Node node){
-		if (visitedNodes.contains(node)) return;
-		for(int i = 0; i < node.neighbours.size(); i++){
-			//boolean deleted = false;
-			
-			if (currentNode.neighbours.contains(node.neighbours.get(i))){
-				neighboursArray.add(node.neighbours.get(i));
+		//Verify if we have already been on this node to prevent infinite looping
+		if (!visitedNodes.contains(node)){
+			//Add current node to the visited list
+			visitedNodes.add(node);
+			for(int i = 0; i < node.neighbours.size(); i++){
+				if (currentNode.neighbours.contains(node.neighbours.get(i)) 
+						&& !visitedNodes.contains(node.neighbours.get(i))){
+					neighboursArray.add(node.neighbours.get(i));
+				}
+				if (!node.neighbours.get(i).equals(currentNode))
+					//recursive call on the neighbours
+					recursiveDeleteRedundancy(node.neighbours.get(i));
 			}
-			
-			//add to visited list
-			if (!visitedNodes.contains(node)){
-				visitedNodes.add(node);		
-			}
-			
-			if(node.neighbours.size() > 0 
-					&& !node.neighbours.isEmpty() 
-					&& !visitedNodes.contains(node.neighbours.get(i))
-					&& !currentNode.equals(node.neighbours.get(i))){
-				recursiveDeleteRedundancy(node.neighbours.get(i));
-			}
-			else
-				return;
 		}
 	}
-	
-	//Get a list of all the neighbours in a chain
-//	private void recursiveNeighboursListing(Node currentNode){
-//		for(int i = 0; i < currentNode.neighbours.size(); i++){
-//			if (!neighboursArray.contains(currentNode.neighbours.get(i))){
-//				neighboursArray.add(currentNode.neighbours.get(i));
-//				if (currentNode.neighbours.size() > 0)
-//					recursiveNeighboursListing(currentNode.neighbours.get(i));
-//			}
-//			
-//		}
-//	}
 	//fin modification
 	
 	
