@@ -163,12 +163,14 @@ public class Network {
 			if(currentNode.neighbours.size() > 1 && !currentNode.neighbours.isEmpty()){
 				recursiveDeleteRedundancy(currentNode.neighbours.get(i));
 			}
-			if(neighboursArray.size() > 1){
+			if(neighboursArray.size() > 1 && currentNode.neighbours.size() > 1){
 				//Delete the edges that are in the list based on the recursive call
 				for(Node node : neighboursArray){
-					removeEdge(currentNode, node);
-					currentNode.neighbours.remove(node);
-					node.neighbours.remove(currentNode);
+					if(node.neighbours.size() > 1){
+						removeEdge(currentNode, node);
+						currentNode.neighbours.remove(node);
+						node.neighbours.remove(currentNode);
+					}
 				}
 			}		
 		}
